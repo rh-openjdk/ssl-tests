@@ -1,0 +1,38 @@
+# https://wiki.openssl.org/index.php/Manual:Req(1)
+[ req ]
+prompt = no
+distinguished_name = req_distinguished_name
+req_extensions = req_ext # The extensions to add to a certificate request
+string_mask = utf8only  # This sets a mask for permitted string types
+
+
+# Subject of the server certificate
+[ req_distinguished_name ]
+O = Example server
+OU = Example server
+# emailAddress = server@server.example
+#CN = server.example
+CN = localhost
+
+
+# Fields added to the server certificate
+[ req_ext ]
+subjectAltName = @alt_names
+
+
+# alternative names (domains) for the server
+[ alt_names ]
+#DNS.1 = server.example
+#DNS.2 = www.server.example
+DNS.1 = localhost
+DNS.2 = localhost.localdomain
+DNS.3 = localhost4
+DNS.4 = localhost4.localdomain4
+DNS.5 = localhost6
+DNS.6 = localhost6.localdomain6
+DNS.7 = 127.0.0.1.xip.io
+DNS.8 = *.127.0.0.1.xip.io
+DNS.9 = 127.0.0.1.nip.io
+DNS.10 = *.127.0.0.1.nip.io
+DNS.11 = lvh.me
+DNS.12 = *.lvh.me
