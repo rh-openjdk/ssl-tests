@@ -94,7 +94,7 @@ $(INTERMEDIATE_CSR): $(INTERMEDIATE_KEY) $(INTERMEDIATE_CNF)
 	-config $(INTERMEDIATE_CNF) -out $(INTERMEDIATE_CSR)
 
 # generate intermediate CA certificate, using csr, signed by root CA
-$(INTERMEDIATE_CRT): $(INTERMEDIATE_CSR) $(ROOT_CRT) $(ROOT_KEY)
+$(INTERMEDIATE_CRT): $(INTERMEDIATE_CSR) $(ROOT_CRT) $(ROOT_KEY) $(ROOT_CNF)
 	$(OPENSSL) x509 -req -days $(CRT_DAYS) -in $(INTERMEDIATE_CSR) \
 	-CA $(ROOT_CRT) -CAkey $(ROOT_KEY) -CAserial $(ROOT_SRL) -CAcreateserial \
 	-extfile $(ROOT_CNF) -extensions intermediate_ext -out $(INTERMEDIATE_CRT)
