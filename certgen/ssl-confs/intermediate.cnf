@@ -19,5 +19,5 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always,issuer
 basicConstraints = CA:FALSE
 # nonRepudiation ?
-keyUsage = critical, digitalSignature, keyEncipherment
+keyUsage = critical, digitalSignature, keyEncipherment, keyAgreement
 extendedKeyUsage = serverAuth
