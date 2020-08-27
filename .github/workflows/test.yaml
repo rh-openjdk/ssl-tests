@@ -19,8 +19,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Build
-        run: make classes
       - name: Run
         run: make SSLContextInfo SSLSocketInfo SSLSocketTest
 
@@ -34,8 +32,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Build
-        run: make classes
       - name: Run
         run: make SSLContextInfo SSLSocketInfo SSLSocketTest
 
@@ -49,7 +45,5 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 14
-      - name: Build
-        run: make classes
       - name: Run
         run: make SSLContextInfo SSLSocketInfo SSLSocketTest
