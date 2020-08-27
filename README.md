@@ -11,7 +11,7 @@ export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk
 ```
 
 ## ssl-tests
-It iterates over all providers/SSLContext/protocol/algorithm combinations and test them one by one.
+It iterates over all providers/algorithm/protocol/cipher combinations and test them one by one.
 I creates basic client+server scenario, where server just echos (repeats) everything client sends.
 Both server and client sockets are configured to have only one protocol and one cipher enabled (these ones to be tested).
 Test checks no exeptions are thrown and that data send and received match.
