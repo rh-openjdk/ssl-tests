@@ -210,14 +210,6 @@ $(KEYSTORE_JKS): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
 
-$(KEYSTORE_JKS_EC): $(KEYSORE_P12_EC)
-	$(KEYTOOL) -importkeystore \
-	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
-	-srcstorepass $(KEYSTORE_PASSWORD) \
-	-destkeystore $(KEYSTORE_JKS_EC) -deststoretype JKS \
-	-deststorepass $(KEYSTORE_PASSWORD) \
-	-noprompt -v
-
 # create truststore with root CA cert
 $(TRUSTSTORE_JKS): $(ROOT_CRT)
 	$(KEYTOOL) -import -file $(ROOT_CRT) -alias rootca \
