@@ -46,15 +46,22 @@ SERVER_CSR = $(CERTGEN_BUILD_DIR)/server.csr
 SERVER_CRT = $(CERTGEN_BUILD_DIR)/server.crt
 SERVER_CNF = $(CERTGEN_CONFS_DIR)/server.cnf
 
+SERVER_KEY_EC = $(CERTGEN_BUILD_DIR)/server-ec.key
+SERVER_CSR_EC = $(CERTGEN_BUILD_DIR)/server-ec.csr
+SERVER_CRT_EC = $(CERTGEN_BUILD_DIR)/server-ec.crt
+SERVER_CNF_EC = $(CERTGEN_CONFS_DIR)/server.cnf
+
 CA_CHAIN_CRT = $(CERTGEN_BUILD_DIR)/cachain.crt
 KEYSORE_P12 = $(CERTGEN_BUILD_DIR)/keystore.p12
+KEYSORE_P12_EC = $(CERTGEN_BUILD_DIR)/keystore-ec.p12
 KEYSTORE_JKS = $(CERTGEN_BUILD_DIR)/keystore.jks
+KEYSTORE_JKS_EC = $(CERTGEN_BUILD_DIR)/keystore-ec.jks
 KEYSTORE_PASSWORD = changeit
 
 TRUSTSTORE_JKS = $(CERTGEN_BUILD_DIR)/truststore.jks
 TRUSTSTORE_PASSWORD = changeit
 
-CERTGEN_TEST_DIR = test
+CERTGEN_TEST_DIR = $(CERTGEN_DIR)/test
 CERTGEN_TEST_BUILD_DIR = $(CERTGEN_BUILD_DIR)/test
 
 .PHONY: certgen_all certgen_clean
@@ -116,6 +123,22 @@ $(SERVER_CRT): $(SERVER_CSR) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
 	-CAserial $(INTERMEDIATE_SRL) -CAcreateserial \
 	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT)
 
+# generate server EC key
+$(SERVER_KEY_EC): | $(CERTGEN_BUILD_DIR)
+	openssl ecparam -name prime256v1 -genkey -noout -out $(SERVER_KEY_EC)
+
+# generate server EC csr (certificate signing request)
+$(SERVER_CSR_EC): $(SERVER_KEY_EC) $(SERVER_CNF_EC)
+	$(OPENSSL) req -new -key $(SERVER_KEY_EC) -config $(SERVER_CNF_EC) \
+	-out $(SERVER_CSR_EC)
+
+# generate server EC certificate, using csr, signed by intermediate CA
+$(SERVER_CRT_EC): $(SERVER_CSR_EC) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
+	$(OPENSSL) x509 -req -days $(CRT_DAYS) -in $(SERVER_CSR_EC) \
+	-CA $(INTERMEDIATE_CRT) -CAkey $(INTERMEDIATE_KEY) \
+	-CAserial $(INTERMEDIATE_SRL) -CAcreateserial \
+	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT_EC)
+
 
 # See: https://blogs.oracle.com/jtc/installing-trusted-certificates-into-a-java-keystore
 # concat CA certificates to the chain
@@ -128,15 +151,34 @@ $(KEYSORE_P12): $(SERVER_CRT) $(SERVER_KEY) $(CA_CHAIN_CRT)
 	-name server -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
+# create EC keystore in PKCS12 format, which can then be imported to jks
+$(KEYSORE_P12_EC): $(SERVER_CRT_EC) $(SERVER_KEY_EC) $(CA_CHAIN_CRT)
+	$(OPENSSL) pkcs12 -export -chain -in $(SERVER_CRT_EC) -inkey $(SERVER_KEY_EC) \
+	-name server-ec -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_EC)  \
+	-passout pass:$(KEYSTORE_PASSWORD)
+
 # create java keystore
-$(KEYSTORE_JKS): $(KEYSORE_P12)
+$(KEYSTORE_JKS): $(KEYSORE_P12) $(KEYSORE_P12_EC)
 	$(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
+	$(KEYTOOL) -importkeystore \
+	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
+	-srcstorepass $(KEYSTORE_PASSWORD) \
+	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
+	-deststorepass $(KEYSTORE_PASSWORD) \
+	-noprompt -v
 
+$(KEYSTORE_JKS_EC): $(KEYSORE_P12_EC)
+	$(KEYTOOL) -importkeystore \
+	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
+	-srcstorepass $(KEYSTORE_PASSWORD) \
+	-destkeystore $(KEYSTORE_JKS_EC) -deststoretype JKS \
+	-deststorepass $(KEYSTORE_PASSWORD) \
+	-noprompt -v
 
 # create truststore with root CA cert
 $(TRUSTSTORE_JKS): $(ROOT_CRT)

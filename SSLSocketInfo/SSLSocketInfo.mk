@@ -1,0 +1,19 @@
+SSLSOCKETINFO_SRC_DIR = $(SSLSOCKETINFO_DIR)/src
+SSLSOCKETINFO_MAIN_CLASS = SSLSocketInfo
+
+.PHONY: SSLSocketInfo SSLSocketInfo-clean SSLSocketInfo-build SSLSocketInfo-run
+
+SSLSocketInfo: SSLSocketInfo-run
+
+SSLSocketInfo-clean:
+	rm -rf $(SSLSOCKETINFO_CLASSES_DIR)
+
+SSLSocketInfo-build: $(SSLSOCKETINFO_CLASSES_DIR)
+
+SSLSocketInfo-run: $(SSLSOCKETINFO_CLASSES_DIR)
+	$(JAVA) -cp $< $(SSLSOCKETINFO_MAIN_CLASS)
+
+$(SSLSOCKETINFO_CLASSES_DIR): $(SSLSOCKETINFO_SRC_DIR)
+	mkdir -p $@
+	$(JAVAC) -d $@ $</*
+

@@ -37,11 +37,7 @@ public class SSLContextInfo {
 
                 String type = service.getType();
                 if (type.equals("SSLContext")) {
-                    System.out.println(provider.getName());
-                    System.out.println(service.getAlgorithm());
-                    System.out.println(type);
-                    System.out.println();
-
+                    System.out.println(provider.getName() + ": " + service.getAlgorithm());
                     SSLContext context = SSLContext.getInstance(service.getAlgorithm(), provider);
                 }
             }
