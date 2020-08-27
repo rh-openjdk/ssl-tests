@@ -188,7 +188,7 @@ public class SSLSocketTester {
                     DTLS is not supported yet by this test
                 */
                 if (protocol.startsWith("DTLS")) {
-                    skipTesting = true;;
+                    skipTesting = true;
                 }
                 /*
                 TLS_EMPTY_RENEGOTIATION_INFO_SCSV is skipped

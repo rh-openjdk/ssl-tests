@@ -3,7 +3,7 @@ JAVAC ?= $(shell if [ -n "$(JAVA_HOME)" ] ; then printf '%s/bin/javac' "$(JAVA_H
 KEYTOOL ?= $(shell if [ -n "$(JAVA_HOME)" ] ; then printf '%s/bin/keytool' "$(JAVA_HOME)" ; else printf 'keytool' ; fi )
 OPENSSL = openssl
 
-all: SSLSocketTest
+all: ssl-tests
 
 CERTGEN_DIR = certgen
 CERTGEN_BUILD_DIR = build/certgen
@@ -17,9 +17,9 @@ SSLSOCKETINFO_DIR = SSLSocketInfo
 SSLSOCKETINFO_CLASSES_DIR = build/SSLSocketInfo
 include $(SSLSOCKETINFO_DIR)/SSLSocketInfo.mk
 
-SSLSOCKETTEST_DIR = SSLSocketTest
-SSLSOCKETTEST_CLASSES_DIR = build/SSLSocketTest
-include $(SSLSOCKETTEST_DIR)/SSLSocketTest.mk
+SSLTESTS_DIR = ssl-tests
+SSLTESTS_CLASSES_DIR = build/ssl-tests
+include $(SSLTESTS_DIR)/ssl-tests.mk
 
 clean:
 	rm -rf build
