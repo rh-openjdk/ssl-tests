@@ -41,21 +41,27 @@ INTERMEDIATE_CRT = $(CERTGEN_BUILD_DIR)/intermediate.crt
 INTERMEDIATE_SRL = $(CERTGEN_BUILD_DIR)/intermediate.srl
 INTERMEDIATE_CNF = $(CERTGEN_CONFS_DIR)/intermediate.cnf
 
-SERVER_KEY = $(CERTGEN_BUILD_DIR)/server.key
-SERVER_CSR = $(CERTGEN_BUILD_DIR)/server.csr
-SERVER_CRT = $(CERTGEN_BUILD_DIR)/server.crt
-SERVER_CNF = $(CERTGEN_CONFS_DIR)/server.cnf
+SERVER_KEY_RSA = $(CERTGEN_BUILD_DIR)/server-rsa.key
+SERVER_CSR_RSA = $(CERTGEN_BUILD_DIR)/server-rsa.csr
+SERVER_CRT_RSA = $(CERTGEN_BUILD_DIR)/server-rsa.crt
+SERVER_CNF_RSA = $(CERTGEN_CONFS_DIR)/server.cnf
 
 SERVER_KEY_EC = $(CERTGEN_BUILD_DIR)/server-ec.key
 SERVER_CSR_EC = $(CERTGEN_BUILD_DIR)/server-ec.csr
 SERVER_CRT_EC = $(CERTGEN_BUILD_DIR)/server-ec.crt
 SERVER_CNF_EC = $(CERTGEN_CONFS_DIR)/server.cnf
 
+SERVER_KEY_PARAM_DSA = $(CERTGEN_BUILD_DIR)/server-dsa.param
+SERVER_KEY_DSA = $(CERTGEN_BUILD_DIR)/server-dsa.key
+SERVER_CSR_DSA = $(CERTGEN_BUILD_DIR)/server-dsa.csr
+SERVER_CRT_DSA = $(CERTGEN_BUILD_DIR)/server-dsa.crt
+SERVER_CNF_DSA = $(CERTGEN_CONFS_DIR)/server.cnf
+
 CA_CHAIN_CRT = $(CERTGEN_BUILD_DIR)/cachain.crt
-KEYSORE_P12 = $(CERTGEN_BUILD_DIR)/keystore.p12
+KEYSORE_P12_RSA = $(CERTGEN_BUILD_DIR)/keystore-rsa.p12
 KEYSORE_P12_EC = $(CERTGEN_BUILD_DIR)/keystore-ec.p12
+KEYSORE_P12_DSA = $(CERTGEN_BUILD_DIR)/keystore-dsa.p12
 KEYSTORE_JKS = $(CERTGEN_BUILD_DIR)/keystore.jks
-KEYSTORE_JKS_EC = $(CERTGEN_BUILD_DIR)/keystore-ec.jks
 KEYSTORE_PASSWORD = changeit
 
 TRUSTSTORE_JKS = $(CERTGEN_BUILD_DIR)/truststore.jks
@@ -107,21 +113,21 @@ $(INTERMEDIATE_CRT): $(INTERMEDIATE_CSR) $(ROOT_CRT) $(ROOT_KEY) $(ROOT_CNF)
 	-extfile $(ROOT_CNF) -extensions intermediate_ext -out $(INTERMEDIATE_CRT)
 
 
-# generate server key
-$(SERVER_KEY): | $(CERTGEN_BUILD_DIR)
-	$(OPENSSL) genrsa -out $(SERVER_KEY) $(KEY_SIZE)
+# generate server RSA key
+$(SERVER_KEY_RSA): | $(CERTGEN_BUILD_DIR)
+	$(OPENSSL) genrsa -out $(SERVER_KEY_RSA) $(KEY_SIZE)
 
-# generate server csr (certificate signing request)
-$(SERVER_CSR): $(SERVER_KEY) $(SERVER_CNF)
-	$(OPENSSL) req -new -key $(SERVER_KEY) -config $(SERVER_CNF) \
-	-out $(SERVER_CSR)
+# generate server RSA csr (certificate signing request)
+$(SERVER_CSR_RSA): $(SERVER_KEY_RSA) $(SERVER_CNF_RSA)
+	$(OPENSSL) req -new -key $(SERVER_KEY_RSA) -config $(SERVER_CNF_RSA) \
+	-out $(SERVER_CSR_RSA)
 
-# generate server certificate, using csr, signed by intermediate CA
-$(SERVER_CRT): $(SERVER_CSR) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
-	$(OPENSSL) x509 -req -days $(CRT_DAYS) -in $(SERVER_CSR) \
+# generate server RSA certificate, using csr, signed by intermediate CA
+$(SERVER_CRT_RSA): $(SERVER_CSR_RSA) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
+	$(OPENSSL) x509 -req -days $(CRT_DAYS) -in $(SERVER_CSR_RSA) \
 	-CA $(INTERMEDIATE_CRT) -CAkey $(INTERMEDIATE_KEY) \
 	-CAserial $(INTERMEDIATE_SRL) -CAcreateserial \
-	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT)
+	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT_RSA)
 
 # generate server EC key
 $(SERVER_KEY_EC): | $(CERTGEN_BUILD_DIR)
@@ -139,6 +145,23 @@ $(SERVER_CRT_EC): $(SERVER_CSR_EC) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
 	-CAserial $(INTERMEDIATE_SRL) -CAcreateserial \
 	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT_EC)
 
+# generate server DSA key
+$(SERVER_KEY_DSA): | $(CERTGEN_BUILD_DIR)
+	openssl dsaparam -out $(SERVER_KEY_PARAM_DSA) 2048
+	openssl gendsa -out $(SERVER_KEY_DSA) $(SERVER_KEY_PARAM_DSA)
+
+# generate server DSA csr (certificate signing request)
+$(SERVER_CSR_DSA): $(SERVER_KEY_DSA) $(SERVER_CNF_DSA)
+	$(OPENSSL) req -new -key $(SERVER_KEY_DSA) -config $(SERVER_CNF_DSA) \
+	-out $(SERVER_CSR_DSA)
+
+# generate server DSA certificate, using csr, signed by intermediate CA
+$(SERVER_CRT_DSA): $(SERVER_CSR_DSA) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
+	$(OPENSSL) x509 -req -days $(CRT_DAYS) -in $(SERVER_CSR_DSA) \
+	-CA $(INTERMEDIATE_CRT) -CAkey $(INTERMEDIATE_KEY) \
+	-CAserial $(INTERMEDIATE_SRL) -CAcreateserial \
+	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT_DSA)
+
 
 # See: https://blogs.oracle.com/jtc/installing-trusted-certificates-into-a-java-keystore
 # concat CA certificates to the chain
@@ -146,9 +169,9 @@ $(CA_CHAIN_CRT): $(ROOT_CRT) $(INTERMEDIATE_CRT)
 	cat $(ROOT_CRT) $(INTERMEDIATE_CRT) > $(CA_CHAIN_CRT)
 
 # create keystore in PKCS12 format, which can then be imported to jks
-$(KEYSORE_P12): $(SERVER_CRT) $(SERVER_KEY) $(CA_CHAIN_CRT)
-	$(OPENSSL) pkcs12 -export -chain -in $(SERVER_CRT) -inkey $(SERVER_KEY) \
-	-name server -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12)  \
+$(KEYSORE_P12_RSA): $(SERVER_CRT_RSA) $(SERVER_KEY_RSA) $(CA_CHAIN_CRT)
+	$(OPENSSL) pkcs12 -export -chain -in $(SERVER_CRT_RSA) -inkey $(SERVER_KEY_RSA) \
+	-name server-rsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_RSA)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
 # create EC keystore in PKCS12 format, which can then be imported to jks
@@ -157,16 +180,28 @@ $(KEYSORE_P12_EC): $(SERVER_CRT_EC) $(SERVER_KEY_EC) $(CA_CHAIN_CRT)
 	-name server-ec -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_EC)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
+# create DSA keystore in PKCS12 format, which can then be imported to jks
+$(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
+	$(OPENSSL) pkcs12 -export -chain -in $(SERVER_CRT_DSA) -inkey $(SERVER_KEY_DSA) \
+	-name server-dsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_DSA)  \
+	-passout pass:$(KEYSTORE_PASSWORD)
+
 # create java keystore
-$(KEYSTORE_JKS): $(KEYSORE_P12) $(KEYSORE_P12_EC)
+$(KEYSTORE_JKS): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
 	$(KEYTOOL) -importkeystore \
-	-srckeystore $(KEYSORE_P12) -srcstoretype PKCS12 \
+	-srckeystore $(KEYSORE_P12_RSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
 	$(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
+	-srcstorepass $(KEYSTORE_PASSWORD) \
+	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
+	-deststorepass $(KEYSTORE_PASSWORD) \
+	-noprompt -v
+	$(KEYTOOL) -importkeystore \
+	-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
 	-deststorepass $(KEYSTORE_PASSWORD) \
