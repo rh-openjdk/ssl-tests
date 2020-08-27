@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Zdeněk Žamberský
+# Copyright (c) 2018, 2020 Zdeněk Žamberský
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,10 @@
 #   KEYTOOL - keytool executable
 #   + see test/certgen-test.gmk
 
-KEY_SIZE = 2048
+RSA_KEY_SIZE = 2048
+# DSA size needs to be 1024 to avoid:
+# java.security.InvalidKeyException: The security strength of SHA-1 digest algorithm is not sufficient for this key size
+DSA_KEY_SIZE = 1024
 CRT_DAYS = 365
 
 CERTGEN_CONFS_DIR = $(CERTGEN_DIR)/ssl-confs
@@ -89,7 +92,7 @@ $(CERTGEN_BUILD_DIR):
 
 # generate root CA key
 $(ROOT_KEY): | $(CERTGEN_BUILD_DIR)
-	$(OPENSSL) genrsa -out $(ROOT_KEY) $(KEY_SIZE)
+	$(OPENSSL) genrsa -out $(ROOT_KEY) $(RSA_KEY_SIZE)
 
 # generate root CA crt (self-signed)
 $(ROOT_CRT): $(ROOT_KEY) $(ROOT_CNF)
@@ -99,7 +102,7 @@ $(ROOT_CRT): $(ROOT_KEY) $(ROOT_CNF)
 
 # generate intermediate CA key
 $(INTERMEDIATE_KEY): | $(CERTGEN_BUILD_DIR)
-	$(OPENSSL) genrsa -out $(INTERMEDIATE_KEY) $(KEY_SIZE)
+	$(OPENSSL) genrsa -out $(INTERMEDIATE_KEY) $(RSA_KEY_SIZE)
 
 # generate intermediate CA  csr (certificate signing request)
 $(INTERMEDIATE_CSR): $(INTERMEDIATE_KEY) $(INTERMEDIATE_CNF)
@@ -115,7 +118,7 @@ $(INTERMEDIATE_CRT): $(INTERMEDIATE_CSR) $(ROOT_CRT) $(ROOT_KEY) $(ROOT_CNF)
 
 # generate server RSA key
 $(SERVER_KEY_RSA): | $(CERTGEN_BUILD_DIR)
-	$(OPENSSL) genrsa -out $(SERVER_KEY_RSA) $(KEY_SIZE)
+	$(OPENSSL) genrsa -out $(SERVER_KEY_RSA) $(RSA_KEY_SIZE)
 
 # generate server RSA csr (certificate signing request)
 $(SERVER_CSR_RSA): $(SERVER_KEY_RSA) $(SERVER_CNF_RSA)
@@ -147,7 +150,7 @@ $(SERVER_CRT_EC): $(SERVER_CSR_EC) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
 
 # generate server DSA key
 $(SERVER_KEY_DSA): | $(CERTGEN_BUILD_DIR)
-	openssl dsaparam -out $(SERVER_KEY_PARAM_DSA) 2048
+	openssl dsaparam -out $(SERVER_KEY_PARAM_DSA) $(DSA_KEY_SIZE)
 	openssl gendsa -out $(SERVER_KEY_DSA) $(SERVER_KEY_PARAM_DSA)
 
 # generate server DSA csr (certificate signing request)
