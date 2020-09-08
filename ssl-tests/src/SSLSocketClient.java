@@ -80,9 +80,14 @@ public class SSLSocketClient {
                         while (sent < dataBuffer.length) {
                             os.write(dataBuffer[sent++]);
                         }
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         if (!SSLSocketTester.isOkException(ex)) {
                                 Logger.getLogger(SSLSocketClient.class.getName()).log(Level.SEVERE, null, ex);
+                                try {
+                                    sslSocket.close();
+                                } catch (IOException ex2) {
+                                    // ignored
+                                }
                         }
                     }
                 }
@@ -105,7 +110,7 @@ public class SSLSocketClient {
                     }
                 }
                 if (read != dataBuffer.length) {
-                    throw new RuntimeException("Received less data then sent!");
+                    throw new RuntimeException("Received less data then sent: " + read + " < " + dataBuffer.length  + " !");
                 }
             } finally {
                 try {

@@ -75,7 +75,7 @@ public class SSLSocketServer {
                         } catch (SocketException ignored) {
                             // this exception is expected
                             // on serverSocket close
-                        } catch (IOException ex) {
+                        } catch (Exception ex) {
                             if (!SSLSocketTester.isOkException(ex)) {
                                     Logger.getLogger(
                                         SSLSocketServer.class.getName())

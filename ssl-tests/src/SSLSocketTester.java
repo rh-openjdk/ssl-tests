@@ -48,7 +48,7 @@ public class SSLSocketTester {
     KeyManager[] clientKeyManagers;
     TrustManager[] clientTrustManagers;
 
-    boolean onlySSLDefaults = false;
+    boolean onlySSLDefaults;
     static boolean ignoreSomeEx = true;
     boolean failed;
 
@@ -56,16 +56,37 @@ public class SSLSocketTester {
 
     }
 
+    private static boolean getBooleanProperty(String name, boolean defaultValue) {
+        String val = System.getProperty(name);
+        if (val != null) {
+            String valLow = val.toLowerCase();
+            if (valLow.equals("1") || valLow.equals("true")) {
+                return true;
+            } else if (valLow.equals("0") || valLow.equals("false")) {
+                return false;
+            }
+        }
+        return defaultValue;
+    }
+
     public void init() throws Exception {
         String serverKeystoreFile = System.getProperty("javax.net.ssl.keyStore");
         String serverKeystorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
         String clientTruststoreFile = System.getProperty("javax.net.ssl.trustStore");
         String clientTruststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-
-        serverKeyManagers = getKeyManagers(serverKeystoreFile,
-                serverKeystorePassword);
-        clientTrustManagers = getTrustManagers(clientTruststoreFile,
-                clientTruststorePassword);
+        if (serverKeystoreFile == null || serverKeystoreFile.equals("NONE")) {
+            // fips mode
+            serverKeyManagers = getKeyManagers(null,
+                    "nss.SECret.123");
+            clientTrustManagers = getTrustManagers(null,
+                    "nss.SECret.123");
+        } else {
+            serverKeyManagers = getKeyManagers(serverKeystoreFile,
+                    serverKeystorePassword);
+            clientTrustManagers = getTrustManagers(clientTruststoreFile,
+                    clientTruststorePassword);
+        }
+        onlySSLDefaults = getBooleanProperty("ssltests.onlyssldefaults", false);
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {
@@ -91,8 +112,13 @@ public class SSLSocketTester {
     KeyStore loadKeystore(String file, String password) throws Exception {
         String defaultType = KeyStore.getDefaultType();
         KeyStore keystore = KeyStore.getInstance(defaultType);
-        try (FileInputStream fis = new FileInputStream(file)) {
-            keystore.load(fis, password.toCharArray());
+        char[] passwordArray = password == null ? null : password.toCharArray();
+        if (file != null) {
+            try (FileInputStream fis = new FileInputStream(file)) {
+                keystore.load(fis, passwordArray);
+            }
+        } else {
+            keystore.load(null, passwordArray);
         }
         return keystore;
     }

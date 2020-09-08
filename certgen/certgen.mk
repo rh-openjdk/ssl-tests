@@ -70,12 +70,18 @@ KEYSTORE_PASSWORD = changeit
 TRUSTSTORE_JKS = $(CERTGEN_BUILD_DIR)/truststore.jks
 TRUSTSTORE_PASSWORD = changeit
 
+NSSDB_DIR = $(CERTGEN_BUILD_DIR)/nssdb
+NSSDB_PASSWORD = nss.SECret.123
+NSSDB_JAVA_SECURITY = $(CERTGEN_BUILD_DIR)/java.security
+
 CERTGEN_TEST_DIR = $(CERTGEN_DIR)/test
 CERTGEN_TEST_BUILD_DIR = $(CERTGEN_BUILD_DIR)/test
 
 .PHONY: certgen_all certgen_clean
 
 certgen_all: $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) certgen_test_run
+
+certgen_nssdb: $(NSSDB_DIR)
 
 certgen_clean: cleantest
 	rm -rf $(ROOT_KEY) $(ROOT_CRT) $(ROOT_SRL) \
@@ -148,10 +154,15 @@ $(SERVER_CRT_EC): $(SERVER_CSR_EC) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
 	-CAserial $(INTERMEDIATE_SRL) -CAcreateserial \
 	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT_EC)
 
-# generate server DSA key
-$(SERVER_KEY_DSA): | $(CERTGEN_BUILD_DIR)
-	openssl dsaparam -out $(SERVER_KEY_PARAM_DSA) $(DSA_KEY_SIZE)
-	openssl gendsa -out $(SERVER_KEY_DSA) $(SERVER_KEY_PARAM_DSA)
+# generate server DSA param (fallback to pregenerated, needed in FIPS mode)
+$(SERVER_KEY_PARAM_DSA): | $(CERTGEN_BUILD_DIR)
+	openssl dsaparam -out $(SERVER_KEY_PARAM_DSA) $(DSA_KEY_SIZE) \
+	|| cp $(CERTGEN_DIR)/server-dsa.param $(SERVER_KEY_PARAM_DSA)
+
+# generate server DSA key (fallback to pregenerated, needed in FIPS mode)
+$(SERVER_KEY_DSA): $(SERVER_KEY_PARAM_DSA) | $(CERTGEN_BUILD_DIR)
+	openssl gendsa -out $(SERVER_KEY_DSA) $(SERVER_KEY_PARAM_DSA) \
+	|| cp $(CERTGEN_DIR)/server-dsa.key $(SERVER_KEY_DSA)
 
 # generate server DSA csr (certificate signing request)
 $(SERVER_CSR_DSA): $(SERVER_KEY_DSA) $(SERVER_CNF_DSA)
@@ -214,5 +225,16 @@ $(KEYSTORE_JKS): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
 $(TRUSTSTORE_JKS): $(ROOT_CRT)
 	$(KEYTOOL) -import -file $(ROOT_CRT) -alias rootca \
 	-keystore $(TRUSTSTORE_JKS) -storepass $(TRUSTSTORE_PASSWORD) -noprompt
+
+# create nss db with keys and certs
+$(NSSDB_DIR): $(ROOT_CRT) $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
+	mkdir $(NSSDB_DIR)
+	echo "$(NSSDB_PASSWORD)" > $(NSSDB_DIR)/password.txt
+	certutil -N -d $(NSSDB_DIR) -f $(NSSDB_DIR)/password.txt
+	touch $(NSSDB_DIR)/secmod.db
+	certutil -A -n rootca -i $(ROOT_CRT) -t C,, -d $(NSSDB_DIR) -f $(NSSDB_DIR)/password.txt
+	pk12util -i $(KEYSORE_P12_RSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
+	pk12util -i $(KEYSORE_P12_EC) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
+	pk12util -i $(KEYSORE_P12_DSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
 
 include $(CERTGEN_TEST_DIR)/certgen-test.mk
