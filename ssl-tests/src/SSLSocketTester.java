@@ -49,6 +49,7 @@ public class SSLSocketTester {
     TrustManager[] clientTrustManagers;
 
     boolean onlySSLDefaults;
+    String[] singleSSLConfigParts = null;
     static boolean ignoreSomeEx = true;
     boolean failed;
 
@@ -87,6 +88,13 @@ public class SSLSocketTester {
                     clientTruststorePassword);
         }
         onlySSLDefaults = getBooleanProperty("ssltests.onlyssldefaults", false);
+        String singleSSLConfig = System.getProperty("ssltests.singlesslconfig");
+        if (singleSSLConfig != null) {
+            String[] singleSSLConfigParts1 = singleSSLConfig.split(",");
+            if (singleSSLConfigParts1.length == 4) {
+                singleSSLConfigParts = singleSSLConfigParts1;
+            }
+        }
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {
@@ -151,6 +159,11 @@ public class SSLSocketTester {
         Provider[] providers = Security.getProviders();
         for (Provider provider : providers) {
             if (providesSSLContext(provider)) {
+                if (singleSSLConfigParts != null
+                    && !singleSSLConfigParts[0].equals(provider.getName())) {
+                    continue;
+                }
+
                 // System.out.println("Provider: " + provider.getName());
                 testProvider(provider);
             }
@@ -175,12 +188,16 @@ public class SSLSocketTester {
         Set<Provider.Service> services = provider.getServices();
         for (Provider.Service service : services) {
             if (isSSLContext(service)) {
-                String alghoritm = service.getAlgorithm();
+                String alghorithm = service.getAlgorithm();
+                if (singleSSLConfigParts != null
+                    && !singleSSLConfigParts[1].equals(alghorithm)) {
+                    continue;
+                }
 
                 SSLContext serverContext
-                        = SSLContext.getInstance(alghoritm, provider);
+                        = SSLContext.getInstance(alghorithm, provider);
                 SSLContext clientContext
-                        = SSLContext.getInstance(alghoritm, provider);
+                        = SSLContext.getInstance(alghorithm, provider);
                 /* Default contexts are auto initialized */
                 if (!serverContext.getProtocol().toUpperCase().equals("DEFAULT")) {
                     serverContext.init(serverKeyManagers,
@@ -205,7 +222,15 @@ public class SSLSocketTester {
                         : sslServerContext.getSupportedSSLParameters();
         for (String protocol
                 : sslParameters.getProtocols()) {
+            if (singleSSLConfigParts != null
+                && !singleSSLConfigParts[2].equals(protocol)) {
+                continue;
+            }
             for (String cipher : sslParameters.getCipherSuites()) {
+                if (singleSSLConfigParts != null
+                    && !singleSSLConfigParts[3].equals(cipher)) {
+                    continue;
+                }
                 boolean skipTesting = false;
                 if (protocol.equals("SSLv2Hello")) {
                     skipTesting = true;
