@@ -15,5 +15,5 @@ SSLContextInfo-run: $(SSLCONTEXTINFO_CLASSES_DIR)
 
 $(SSLCONTEXTINFO_CLASSES_DIR): $(SSLCONTEXTINFO_SRC_DIR)
 	mkdir -p $@
-	$(JAVAC) -d $@ $</*
+	$(JAVAC) -g -d $@ $</*
 
