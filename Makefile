@@ -63,7 +63,7 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 			sed -i 's;^fips.provider.1=SunPKCS11.*$$;fips.provider.1=SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ;	\
 		fi ; \
 		if [ 0 = "$(SET_RPMS_KEYSTORE_TYPE)" ] ; then \
-			sed -i "s;^keystore.type=.*$$;keystore.type=PKCS11;g" $@ ; \\
+			sed -i "s;^keystore.type=.*$$;keystore.type=PKCS11;g" $@ ; \
 		fi \
 	else \
 		sed -i "s;^security\.provider\.;#security.provider;g" $@ ; \
