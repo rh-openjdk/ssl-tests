@@ -80,7 +80,7 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 			"security.provider.1=SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG)" \
 			"security.provider.2=SUN" \
 			"security.provider.3=SunEC" \
-			"security.provider.4=com.sun.net.ssl.internal.ssl.Provider SunPKCS11-NSS-FIPS" \
+			"security.provider.4=SunJSSE SunPKCS11-NSS-FIPS" \
 			>> $@ ; \
 		fi ; \
 	fi
