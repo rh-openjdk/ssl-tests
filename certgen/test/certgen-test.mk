@@ -39,7 +39,7 @@ $(CERTGEN_TEST_BUILD_DIR): | $(CERTGEN_BUILD_DIR)
 
 $(CERTGEN_TEST_CLASSES_DIR): | $(CERTGEN_TEST_BUILD_DIR)
 	mkdir $(CERTGEN_TEST_CLASSES_DIR)
-	$(JAVAC) -d $(CERTGEN_TEST_CLASSES_DIR) \
+	$(JAVAC) -encoding UTF-8 -d $(CERTGEN_TEST_CLASSES_DIR) \
 	$(CERTGEN_TEST_SRC_DIR)/$(CERTGEN_TEST_MAIN_CLASS).java
 
 # test app should return non-zero value without keystore + truststore config

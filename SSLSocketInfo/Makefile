@@ -20,4 +20,4 @@ run: $(CLASSES_DIR)
 
 $(CLASSES_DIR): $(SRC_DIR)
 	mkdir $@
-	$(JAVAC) -g -d $@ $</*
+	$(JAVAC) -encoding UTF-8 -g -d $@ $</*
