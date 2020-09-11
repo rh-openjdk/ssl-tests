@@ -35,4 +35,4 @@ ssl-tests-run: $(SSLTESTS_RUN_TARGET)
 
 $(SSLTESTS_CLASSES_DIR): $(SSLTESTS_SRC_DIR)
 	mkdir -p $@
-	$(JAVAC) -g -d $@ $</*
+	$(JAVAC) -encoding UTF-8 -g -d $@ $</*

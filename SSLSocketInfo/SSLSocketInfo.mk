@@ -15,5 +15,5 @@ SSLSocketInfo-run: $(SSLSOCKETINFO_CLASSES_DIR)
 
 $(SSLSOCKETINFO_CLASSES_DIR): $(SSLSOCKETINFO_SRC_DIR)
 	mkdir -p $@
-	$(JAVAC) -d $@ $</*
+	$(JAVAC) -encoding UTF-8 -d $@ $</*
 
