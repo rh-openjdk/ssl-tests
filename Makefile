@@ -4,7 +4,7 @@ KEYTOOL ?= $(shell if [ -n "$(JAVA_HOME)" ] ; then printf '%s/bin/keytool' "$(JA
 OPENSSL = openssl
 
 JAVA_VERSION_MAJOR := $(shell $(JAVA) -version 2>&1 | grep version | head -n 1 | sed -E 's/^.*"(1[.])?([0-9]+).*$$/\2/g' )
-JAVA_HOME_DIR  := $(shell if [ -n "$(JAVA_HOME)" ] ; then printf '%s' "$(JAVA_HOME)" ; else readlink -f $$( which $(JAVA) ) | sed 's;/bin/java$$;;g' | sed 's;/jre$$;;g' ; fi )
+JAVA_HOME_DIR  := $(shell if [ -n "$(JAVA_HOME)" ] ; then printf '%s' "$(JAVA_HOME)" ; else readlink -f $$( which $(JAVA) 2>/dev/null || type $(JAVA) | sed 's;.* ;;g' ) | sed 's;/bin/java$$;;g' | sed 's;/jre$$;;g' ; fi )
 JAVA_CONF_DIR := $(shell if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then printf '%s' "$(JAVA_HOME_DIR)/jre/lib" ; else printf '%s' "$(JAVA_HOME_DIR)/conf" ; fi )
 
 FIPS_MODE_ENABLED := $(shell if [ -e "/proc/sys/crypto/fips_enabled" ] && [ 1 = $$(cat /proc/sys/crypto/fips_enabled) ] ; then echo 1 ; else echo 0 ; fi )
