@@ -13,7 +13,7 @@ TEST_PKCS11_FIPS ?= $(shell if [ 1 = $(FIPS_MODE_ENABLED) ] && [ -n "$(JAVA_HOME
 JAVA_PKCS11_FIPS_CONF_DIR = build/java-conf
 JAVA_PKCS11_FIPS_NSS_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/nss.fips.cfg
 JAVA_PKCS11_FIPS_SECURITY_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/java.security
-JAVA_PKCS11_FIPS_PARAMS := $(shell if [ 1 = "$(TEST_PKCS11_FIPS)" ] && ! cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' ; then printf '%s' '-Djavax.net.ssl.keyStore=NONE' ; fi )
+JAVA_PKCS11_FIPS_PARAMS := $(shell if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' ; then printf '%s' '-Dcom.redhat.fips=true' ;  else printf '%s' '-Djavax.net.ssl.keyStore=NONE' ; fi ; fi )
 
 
 all: ssl-tests
