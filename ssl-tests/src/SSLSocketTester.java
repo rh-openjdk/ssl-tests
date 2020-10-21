@@ -32,6 +32,7 @@ import java.security.Security;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -52,6 +53,8 @@ public class SSLSocketTester {
     String[] sslConfigFilterParts = null;
     static boolean ignoreSomeEx = true;
     boolean failed;
+
+    Pattern inoredCiphersPattern = null;
 
     public SSLSocketTester() {
 
@@ -94,6 +97,10 @@ public class SSLSocketTester {
             if (sslConfigFilterParts1.length == 4) {
                 sslConfigFilterParts = sslConfigFilterParts1;
             }
+        }
+        String inoredCiphersPatternString = System.getProperty("ssltests.ignoredCiphersPattern");
+        if (inoredCiphersPatternString != null) {
+            inoredCiphersPattern = Pattern.compile(inoredCiphersPatternString);
         }
     }
 
@@ -247,6 +254,10 @@ public class SSLSocketTester {
                 https://tools.ietf.org/html/rfc5746#section-3.3
                 */
                 if (cipher.equals("TLS_EMPTY_RENEGOTIATION_INFO_SCSV")) {
+                    skipTesting = true;
+                }
+                if (inoredCiphersPattern != null
+                    && inoredCiphersPattern.matcher(cipher).matches()) {
                     skipTesting = true;
                 }
                 testConfiguration(sslServerContext,
