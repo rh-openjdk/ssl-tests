@@ -54,7 +54,9 @@ public class SSLSocketTester {
     static boolean ignoreSomeEx = true;
     boolean failed;
 
-    Pattern inoredCiphersPattern = null;
+    Pattern ignoredCiphersPattern = null;
+    Pattern ignoredProtocolsPattern = null;
+    boolean useOpensslClient = false;
 
     public SSLSocketTester() {
 
@@ -98,10 +100,17 @@ public class SSLSocketTester {
                 sslConfigFilterParts = sslConfigFilterParts1;
             }
         }
-        String inoredCiphersPatternString = System.getProperty("ssltests.ignoredCiphersPattern");
-        if (inoredCiphersPatternString != null) {
-            inoredCiphersPattern = Pattern.compile(inoredCiphersPatternString);
+        String ignoredCiphersPatternString = System.getProperty("ssltests.ignoredCiphersPattern");
+        if (ignoredCiphersPatternString != null) {
+            ignoredCiphersPattern = Pattern.compile(ignoredCiphersPatternString);
         }
+        String ignoredProtocolsPatternString = System.getProperty("ssltests.ignoredProtocolsPattern");
+        if (ignoredProtocolsPatternString != null) {
+            ignoredProtocolsPattern = Pattern.compile(ignoredProtocolsPatternString);
+        }
+
+        useOpensslClient = getBooleanProperty("ssltests.useOpensslClient", false);
+        System.out.println("useOpensslClient: " + useOpensslClient);
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {
@@ -229,6 +238,28 @@ public class SSLSocketTester {
                         : sslServerContext.getSupportedSSLParameters();
         for (String protocol
                 : sslParameters.getProtocols()) {
+            boolean skippedProtocol = false;
+            if (protocol.equals("SSLv2Hello")) {
+                skippedProtocol = true;
+            }
+            /*
+                DTLS is not supported yet by this test
+            */
+            if (protocol.startsWith("DTLS")) {
+                skippedProtocol = true;
+            }
+            if (ignoredProtocolsPattern != null
+                && ignoredProtocolsPattern.matcher(protocol).matches()) {
+                    skippedProtocol = true;
+            }
+            Set opensslCiphers = null;
+            if (!skippedProtocol && useOpensslClient) {
+                try {
+                    opensslCiphers = OpensslClient.getSupportedCiphers(protocol);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
             if (sslConfigFilterParts != null
                 && !sslConfigFilterParts[2].equals(protocol)) {
                 continue;
@@ -238,16 +269,7 @@ public class SSLSocketTester {
                     && !sslConfigFilterParts[3].equals(cipher)) {
                     continue;
                 }
-                boolean skipTesting = false;
-                if (protocol.equals("SSLv2Hello")) {
-                    skipTesting = true;
-                }
-                /*
-                    DTLS is not supported yet by this test
-                */
-                if (protocol.startsWith("DTLS")) {
-                    skipTesting = true;
-                }
+                boolean skipTesting = skippedProtocol;
                 /*
                 TLS_EMPTY_RENEGOTIATION_INFO_SCSV is skipped
                 as it is not really a cipher, see:
@@ -256,9 +278,14 @@ public class SSLSocketTester {
                 if (cipher.equals("TLS_EMPTY_RENEGOTIATION_INFO_SCSV")) {
                     skipTesting = true;
                 }
-                if (inoredCiphersPattern != null
-                    && inoredCiphersPattern.matcher(cipher).matches()) {
+                if (ignoredCiphersPattern != null
+                    && ignoredCiphersPattern.matcher(cipher).matches()) {
                     skipTesting = true;
+                }
+                if (useOpensslClient && opensslCiphers != null) {
+                    if (!opensslCiphers.contains(cipher)) {
+                        skipTesting = true;
+                    }
                 }
                 testConfiguration(sslServerContext,
                         sslClientContext,
@@ -311,11 +338,15 @@ public class SSLSocketTester {
                         enabledProtocols,
                         enabledCiphers);
 
-        SSLSocketClient sslSocketClient
-                = new SSLSocketClient(
-                        sslSocketFactory,
-                        enabledProtocols,
-                        enabledCiphers);
+        SSLSocketClient sslSocketClient;
+        if (useOpensslClient) {
+            sslSocketClient = new OpensslClient();
+        } else {
+            sslSocketClient = new SSLSocketClient(
+                sslSocketFactory,
+                enabledProtocols,
+                enabledCiphers);
+        }
         try {
             try {
                 sslSocketServer.start();
@@ -367,7 +398,10 @@ public class SSLSocketTester {
             see:
             https://hg.openjdk.java.net/jdk8u/jdk8u/jdk/file/ce1f37506608/src/share/classes/sun/security/ssl/Handshaker.java#l554
             */
-            return ex.getMessage().contains("No appropriate protocol (protocol is disabled or cipher suites are inappropriate)");
+            String message = ex.getMessage();
+            if (message != null) {
+                return message.contains("No appropriate protocol (protocol is disabled or cipher suites are inappropriate)");
+            }
         }
         return false;
     }

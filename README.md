@@ -21,6 +21,9 @@ run by:
 make ssl-tests
 ```
 
+makefile variables:
+SSLTESTS_USE_OPENSSL_CLIENT=1 - use openssl client instead of default SSLSocketClient written in java
+
 #### IGNORED combinations:
 Currently, tested combination may show up as IGNORED for following reasons:
 - SSLv2Hello protocol is used, having this enabled as only protocol does not make sense as far as I know
