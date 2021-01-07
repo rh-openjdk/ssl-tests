@@ -21,8 +21,11 @@ run by:
 make ssl-tests
 ```
 
-makefile variables:
-SSLTESTS_USE_OPENSSL_CLIENT=1 - use openssl client instead of default SSLSocketClient written in java
+#### makefile variables:
+- SSLTESTS_IGNORE_PROTOCOLS=... - protocols matching this pattern will be ignored
+- SSLTESTS_IGNORE_CIPHERS=...   - ciphers matching this pattern will be ignored
+- SSLTESTS_SSL_CONFIG_FILTER=?,?,?,? - only specified combination of provider,algorithm,protocol,cipher will be tested
+- SSLTESTS_USE_OPENSSL_CLIENT=1 - use openssl client instead of default SSLSocketClient written in java for testing
 
 #### IGNORED combinations:
 Currently, tested combination may show up as IGNORED for following reasons:
@@ -30,6 +33,7 @@ Currently, tested combination may show up as IGNORED for following reasons:
 - [TLS_EMPTY_RENEGOTIATION_INFO_SCSV](https://tools.ietf.org/html/rfc5746#section-3.3) cipher is used, as this in not really a ciper
 - ["No appropriate protocol" exception](https://hg.openjdk.java.net/jdk8u/jdk8u/jdk/file/ce1f37506608/src/share/classes/sun/security/ssl/Handshaker.java#l554) is thrown, as it is caused by invalid protocol/algorithm combination  (thrown by handshaker)
 - protocol starts with DTLS - tests currently does not support  DTLS
+- it is explicitly ignored (see higher)
 
 ## Other utilities
 
