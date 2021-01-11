@@ -282,7 +282,7 @@ public class SSLSocketTester {
                 not yet supported (ignore for now):
                 https://hg.openjdk.java.net/jdk8u/jdk8u/jdk/file/d5c320d784e5/test/sun/security/krb5/auto/SSL.java
                 */
-                if (cipher.equals("TLS_KRB5")) {
+                if (cipher.startsWith("TLS_KRB5")) {
                     skipTesting = true;
                 }
                 if (ignoredCiphersPattern != null
