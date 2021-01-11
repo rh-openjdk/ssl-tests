@@ -110,7 +110,6 @@ public class SSLSocketTester {
         }
 
         useOpensslClient = getBooleanProperty("ssltests.useOpensslClient", false);
-        System.out.println("useOpensslClient: " + useOpensslClient);
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {

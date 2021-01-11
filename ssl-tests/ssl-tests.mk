@@ -5,7 +5,7 @@ SSLTESTS_ONLY_SSL_DEFAULTS_PARAM := $(shell if [ 1 = "$(SSLTESTS_ONLY_SSL_DEFAUL
 SSLTESTS_SSL_CONFIG_FILTER_PARAM := $(shell if [ -n "$(SSLTESTS_SSL_CONFIG_FILTER)" ] ; then  printf '%s' '-Dssltests.sslconfigFilter=$(SSLTESTS_SSL_CONFIG_FILTER)' ; fi )
 SSLTESTS_IGNORE_PROTOCOLS_PARAM := $(shell if [ -n "$(SSLTESTS_IGNORE_PROTOCOLS)" ] ; then  printf '%s' '-Dssltests.ignoredProtocolsPattern=$(SSLTESTS_IGNORE_PROTOCOLS)' ; fi )
 SSLTESTS_IGNORE_CIPHERS_PARAM := $(shell if [ -n "$(SSLTESTS_IGNORE_CIPHERS)" ] ; then  printf '%s' '-Dssltests.ignoredCiphersPattern=$(SSLTESTS_IGNORE_CIPHERS)' ; fi )
-SSLTESTS_USE_OPENSSL_CLIENT_PARAM := $(shell if [ 1 = "$(SSLTESTS_USE_OPENSSL_CLIENT)" ] ; then  printf '%s' '-Dssltests.cafile=$(ROOT_CRT) -Dssltests.useOpensslClient=1' ; fi )
+SSLTESTS_USE_OPENSSL_CLIENT_PARAM := $(shell if [ 1 = "$(SSLTESTS_USE_OPENSSL_CLIENT)" ] ; then  printf '%s' '-Dssltests.cafile=$(ROOT_CRT) -Dssltests.useOpensslClient=1 -Dssltests.onlyssldefaults=1' ; fi )
 
 .PHONY: ssl-tests ssl-tests-clean ssl-tests-build ssl-tests-run
 
@@ -30,7 +30,7 @@ ssl-tests-run-nss: $(SSLTESTS_CLASSES_DIR) $(JAVA_PKCS11_FIPS_SECURITY_CFG)
 	$(JAVA) -cp $< \
 	-Djava.security.properties=="$(JAVA_PKCS11_FIPS_SECURITY_CFG)" \
 	$(JAVA_PKCS11_FIPS_PARAMS) \
-	$(SSLTESTS_ONLY_SSL_DEFAULTS_PARAM) $(SSLTESTS_SSL_CONFIG_FILTER_PARAM) $(SSLTESTS_IGNORE_CIPHERS_PARAM) \
+	$(SSLTESTS_ONLY_SSL_DEFAULTS_PARAM) $(SSLTESTS_SSL_CONFIG_FILTER_PARAM) $(SSLTESTS_IGNORE_CIPHERS_PARAM) $(SSLTESTS_IGNORE_CIPHERS_PARAM) $(SSLTESTS_USE_OPENSSL_CLIENT_PARAM) \
 	$(SSLTESTS_CUSTOM_JAVA_PARAMS) \
 	$(SSLTESTS_MAIN_CLASS)
 
