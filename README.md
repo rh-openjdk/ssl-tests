@@ -32,7 +32,8 @@ Currently, tested combination may show up as IGNORED for following reasons:
 - SSLv2Hello protocol is used, having this enabled as only protocol does not make sense as far as I know
 - [TLS_EMPTY_RENEGOTIATION_INFO_SCSV](https://tools.ietf.org/html/rfc5746#section-3.3) cipher is used, as this in not really a ciper
 - ["No appropriate protocol" exception](https://hg.openjdk.java.net/jdk8u/jdk8u/jdk/file/ce1f37506608/src/share/classes/sun/security/ssl/Handshaker.java#l554) is thrown, as it is caused by invalid protocol/algorithm combination  (thrown by handshaker)
-- protocol starts with DTLS - tests currently does not support  DTLS
+- protocol starts with DTLS - tests currently does not support DTLS
+- ciphers starting with TLS_KRB5 - tests currently does not support these
 - it is explicitly ignored (see higher)
 
 ## Other utilities

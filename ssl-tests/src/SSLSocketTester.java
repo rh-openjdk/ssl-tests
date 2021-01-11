@@ -277,6 +277,14 @@ public class SSLSocketTester {
                 if (cipher.equals("TLS_EMPTY_RENEGOTIATION_INFO_SCSV")) {
                     skipTesting = true;
                 }
+                /*
+                kerberos seems to need more complicated setup,
+                not yet supported (ignore for now):
+                https://hg.openjdk.java.net/jdk8u/jdk8u/jdk/file/d5c320d784e5/test/sun/security/krb5/auto/SSL.java
+                */
+                if (cipher.equals("TLS_KRB5")) {
+                    skipTesting = true;
+                }
                 if (ignoredCiphersPattern != null
                     && ignoredCiphersPattern.matcher(cipher).matches()) {
                     skipTesting = true;
