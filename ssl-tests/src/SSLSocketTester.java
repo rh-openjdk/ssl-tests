@@ -57,6 +57,7 @@ public class SSLSocketTester {
     Pattern ignoredCiphersPattern = null;
     Pattern ignoredProtocolsPattern = null;
     boolean useOpensslClient = false;
+    boolean useGnutlsClient = false;
 
     public SSLSocketTester() {
 
@@ -110,6 +111,7 @@ public class SSLSocketTester {
         }
 
         useOpensslClient = getBooleanProperty("ssltests.useOpensslClient", false);
+        useGnutlsClient = getBooleanProperty("ssltests.useGnutlsClient", false);
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {
@@ -252,9 +254,13 @@ public class SSLSocketTester {
                     skippedProtocol = true;
             }
             Set opensslCiphers = null;
-            if (!skippedProtocol && useOpensslClient) {
+            if (!skippedProtocol) {
                 try {
-                    opensslCiphers = OpensslClient.getSupportedCiphers(protocol);
+                    if (useOpensslClient) {
+                        opensslCiphers = OpensslClient.getSupportedCiphers(protocol);
+                    } else if (useGnutlsClient) {
+                        opensslCiphers = GnutlsClient.getSupportedCiphers(protocol);
+                    }
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -289,7 +295,7 @@ public class SSLSocketTester {
                     && ignoredCiphersPattern.matcher(cipher).matches()) {
                     skipTesting = true;
                 }
-                if (useOpensslClient && opensslCiphers != null) {
+                if ((useOpensslClient || useGnutlsClient) && opensslCiphers != null) {
                     if (!opensslCiphers.contains(cipher)) {
                         skipTesting = true;
                     }
@@ -348,6 +354,8 @@ public class SSLSocketTester {
         SSLSocketClient sslSocketClient;
         if (useOpensslClient) {
             sslSocketClient = new OpensslClient();
+        } else if (useGnutlsClient) {
+            sslSocketClient = new GnutlsClient();
         } else {
             sslSocketClient = new SSLSocketClient(
                 sslSocketFactory,

@@ -68,7 +68,7 @@ public class StreamReader {
         t.start();
     }
 
-    public void waitfor() throws InterruptedException {
+    public void waitFor() throws InterruptedException {
         t.join();
     }
 

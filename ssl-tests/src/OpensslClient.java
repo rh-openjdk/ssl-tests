@@ -38,12 +38,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
 
-public class OpensslClient extends SSLSocketClient {
+public class OpensslClient extends ExternalClient {
 
     String cafile;
 
     public OpensslClient() {
-        super(null, null, null);
         cafile = System.getProperty("ssltests.cafile");
     }
 
@@ -94,102 +93,8 @@ public class OpensslClient extends SSLSocketClient {
         return hs;
     }
 
-    public void test(String host, int port) throws IOException {
-        Path msgFile = Files.createTempFile("ssl-tests-openssl", null);
-        ProcessBuilder pb =
-            new ProcessBuilder("openssl", "s_client", "-connect", host + ":" + port, "-servername", host, "-CAfile", cafile, "-msg", "-msgfile", msgFile.toString(), "-quiet", "-no_ign_eof");
-        int retval = 0;
-        boolean error = false;
-        Thread sendingThread = null;
-        StreamReader sr = null;
-        Process p = pb.start();
-        try {
-            sr = new StreamReader(p.getErrorStream());
-            sendingThread = new Thread() {
-                @Override
-                public void run() {
-                    OutputStream os = p.getOutputStream();
-                    try {
-                        int sent = 0;
-                        while (sent < dataBuffer.length) {
-                            os.write(dataBuffer[sent++]);
-                        }
-                        os.flush();
-                    } catch (Exception ex) {
-                        Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
-                        p.destroy();
-                    }
-                }
-            };
-            sr.start();
-            sendingThread.start();
-            InputStream is = p.getInputStream();
-
-            int read = 0;
-            int readByte = 0;
-            while ((readByte = is.read()) >= 0) {
-                if (read > dataBuffer.length) {
-                    throw new RuntimeException("Received more data then sent!");
-                }
-                if (readByte != (dataBuffer[read++] & 0xFF)) {
-                    throw new RuntimeException("Received different data then sent!");
-                }
-                if (readByte == EOT) {
-                    break;
-                }
-            }
-            if (read != dataBuffer.length) {
-                throw new RuntimeException("Received less data then sent: " + read + " < " + dataBuffer.length  + " !");
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
-            p.destroy();
-            error = true;
-        } finally {
-            if (sendingThread != null) {
-                try {
-                    sendingThread.join();
-                    sendingThread = null;
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-
-            try {
-                p.getOutputStream().close();
-            } catch (Exception ex) {
-                Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
-                p.destroy();
-            }
-            try {
-                retval = p.waitFor();
-                if (retval != 0) {
-                    error = true;
-                }
-            } catch (InterruptedException ex) {
-                Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if (sr != null) {
-                try {
-                    sr.waitfor();
-                    if (error) {
-                        sr.printWithPrefix(System.err, "stderr: ");
-                    }
-                    sr = null;
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            if (error) {
-                for (String line : Files.readAllLines(msgFile)) {
-                    System.err.println("msgfile: " + line);
-                }
-            }
-            Files.deleteIfExists(msgFile);
-        }
-        if (retval != 0) {
-            throw new RuntimeException("Openssl exit value not zero: " + retval);
-        }
+    public ProcessBuilder getClientProcessBuilder(String host, int port, String cafile, String msgFile) {
+        return new  ProcessBuilder("openssl", "s_client", "-connect", host + ":" + port, "-servername", host, "-CAfile", cafile, "-msg", "-msgfile", msgFile.toString(), "-quiet", "-no_ign_eof");
     }
 
 }
