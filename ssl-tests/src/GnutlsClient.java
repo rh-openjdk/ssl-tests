@@ -53,7 +53,8 @@ public class GnutlsClient extends ExternalClient {
 
     public static String getJavaProtoName(String gnuTlsProto) {
         switch (gnuTlsProto) {
-            /* ssl3 ?? */
+            case "SSL3.0":
+                return "SSLv3";
             case "TLS1.0":
                 return "TLSv1";
             case "TLS1.1":
