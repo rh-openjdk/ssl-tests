@@ -71,7 +71,7 @@ public class GnutlsClient extends ExternalClient {
 
     public static HashSet getSupportedCiphers(String protocol) throws Exception {
         HashSet hs = new HashSet();
-        List<String> lines = ExternalClient.getCommandOutput("gnutls-cli", "--priority", "NORMAL", "--list");
+        List<String> lines = ExternalClient.getCommandOutput("gnutls-cli", "--priority", "@SYSTEM", "--list");
         boolean cipherSuitesFound = false;
         String[] components;
         String cipherSuite;
