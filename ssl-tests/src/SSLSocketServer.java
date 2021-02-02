@@ -46,6 +46,7 @@ public class SSLSocketServer {
     Thread serverThread;
     String host = "localhost";
     int port = 0;
+    boolean shutdownOutput = false;
 
     public SSLSocketServer(
             SSLServerSocketFactory serverSocketFactory,
@@ -131,6 +132,10 @@ public class SSLSocketServer {
                 int readByte;
                 while ((readByte = is.read()) >= 0) {
                     os.write(readByte);
+                }
+                // see: https://bugzilla.redhat.com/show_bug.cgi?id=1918473
+                if (shutdownOutput) {
+                    socket.shutdownOutput();
                 }
             }
         }

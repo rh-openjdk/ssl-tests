@@ -59,6 +59,7 @@ public class SSLSocketTester {
     boolean useOpensslClient = false;
     boolean useGnutlsClient = false;
     boolean useNssClient = false;
+    boolean serverShutdownOutput = false;
 
     public SSLSocketTester() {
 
@@ -114,6 +115,7 @@ public class SSLSocketTester {
         useOpensslClient = getBooleanProperty("ssltests.useOpensslClient", false);
         useGnutlsClient = getBooleanProperty("ssltests.useGnutlsClient", false);
         useNssClient = getBooleanProperty("ssltests.useNssClient", false);
+        serverShutdownOutput = SSLSocketTester.getBooleanProperty("ssltests.serverShutdownOutput", false);
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {
@@ -354,6 +356,9 @@ public class SSLSocketTester {
                         sslServerSocketFactory,
                         enabledProtocols,
                         enabledCiphers);
+        if (serverShutdownOutput) {
+            sslSocketServer.shutdownOutput = true;
+        }
 
         SSLSocketClient sslSocketClient;
         if (useOpensslClient) {
