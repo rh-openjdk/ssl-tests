@@ -41,6 +41,7 @@ import java.nio.file.FileSystems;
 public abstract class ExternalClient extends SSLSocketClient {
 
     String cafile;
+    boolean skipData = false;
 
     public ExternalClient() {
         super(null, null, null);
@@ -48,6 +49,20 @@ public abstract class ExternalClient extends SSLSocketClient {
     }
 
     public static boolean testCompatible(String protocol, String cipherSuite, String cipherProtocol) {
+        if (cipherProtocol == null) {
+            if (cipherSuite.indexOf("_GCM_") >= 0
+                || cipherSuite.indexOf("_CHACHA20_") >= 0
+                || cipherSuite.indexOf("_SHA256") >= 0
+                || cipherSuite.indexOf("_SHA384") >= 0) {
+                if (cipherSuite.indexOf("_WITH_") >= 0) {
+                    cipherProtocol = "TLSv1.2";
+                } else {
+                    cipherProtocol = "TLSv1.3";
+                }
+            } else {
+                    cipherProtocol = "TLSv1";
+            }
+        }
         switch (protocol) {
             case "SSLv3":
                 return cipherProtocol.equals("SSLv3");
@@ -131,44 +146,51 @@ public abstract class ExternalClient extends SSLSocketClient {
         boolean error = false;
         Thread sendingThread = null;
         StreamReader errsr = null;
+        StreamReader outsr = null;
         Process p = pb.start();
         try {
             errsr = new StreamReader(p.getErrorStream());
-            sendingThread = new Thread() {
-                @Override
-                public void run() {
-                    OutputStream os = p.getOutputStream();
-                    try {
-                        int sent = 0;
-                        while (sent < dataBuffer.length) {
-                            os.write(dataBuffer[sent++]);
+            errsr.start();
+            if (skipData) {
+                outsr = new StreamReader(p.getInputStream());
+                outsr.start();
+            } else {
+                sendingThread = new Thread() {
+                    @Override
+                    public void run() {
+                        OutputStream os = p.getOutputStream();
+                        try {
+                            int sent = 0;
+                            while (sent < dataBuffer.length) {
+                                os.write(dataBuffer[sent++]);
+                            }
+                            os.flush();
+                        } catch (Exception ex) {
+                            Logger.getLogger(ExternalClient.class.getName()).log(Level.SEVERE, null, ex);
+                            p.destroy();
                         }
-                        os.flush();
-                    } catch (Exception ex) {
-                        Logger.getLogger(ExternalClient.class.getName()).log(Level.SEVERE, null, ex);
-                        p.destroy();
+                    }
+                };
+
+                sendingThread.start();
+                InputStream is = p.getInputStream();
+
+                int read = 0;
+                int readByte = 0;
+                while ((readByte = is.read()) >= 0) {
+                    if (read > dataBuffer.length) {
+                        throw new RuntimeException("Received more data then sent!");
+                    }
+                    if (readByte != (dataBuffer[read++] & 0xFF)) {
+                        throw new RuntimeException("Received different data then sent!");
+                    }
+                    if (readByte == EOT) {
+                        break;
                     }
                 }
-            };
-            errsr.start();
-            sendingThread.start();
-            InputStream is = p.getInputStream();
-
-            int read = 0;
-            int readByte = 0;
-            while ((readByte = is.read()) >= 0) {
-                if (read > dataBuffer.length) {
-                    throw new RuntimeException("Received more data then sent!");
+                if (read != dataBuffer.length) {
+                    throw new RuntimeException("Received less data then sent: " + read + " < " + dataBuffer.length  + " !");
                 }
-                if (readByte != (dataBuffer[read++] & 0xFF)) {
-                    throw new RuntimeException("Received different data then sent!");
-                }
-                if (readByte == EOT) {
-                    break;
-                }
-            }
-            if (read != dataBuffer.length) {
-                throw new RuntimeException("Received less data then sent: " + read + " < " + dataBuffer.length  + " !");
             }
         } catch (IOException ex) {
             p.destroy();
@@ -202,7 +224,11 @@ public abstract class ExternalClient extends SSLSocketClient {
             }
             try {
                 // close stdout
-                p.getInputStream().close();
+                if (skipData) {
+                    outsr.waitFor();
+                } else {
+                    p.getInputStream().close();
+                }
             } catch (Exception ex) {
                 Logger.getLogger(ExternalClient.class.getName()).log(Level.SEVERE, null, ex);
             }

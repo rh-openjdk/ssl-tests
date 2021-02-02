@@ -58,6 +58,7 @@ public class SSLSocketTester {
     Pattern ignoredProtocolsPattern = null;
     boolean useOpensslClient = false;
     boolean useGnutlsClient = false;
+    boolean useNssClient = false;
 
     public SSLSocketTester() {
 
@@ -112,6 +113,7 @@ public class SSLSocketTester {
 
         useOpensslClient = getBooleanProperty("ssltests.useOpensslClient", false);
         useGnutlsClient = getBooleanProperty("ssltests.useGnutlsClient", false);
+        useNssClient = getBooleanProperty("ssltests.useNssClient", false);
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {
@@ -260,6 +262,8 @@ public class SSLSocketTester {
                         opensslCiphers = OpensslClient.getSupportedCiphers(protocol);
                     } else if (useGnutlsClient) {
                         opensslCiphers = GnutlsClient.getSupportedCiphers(protocol);
+                    } else if (useNssClient) {
+                        opensslCiphers = NssClient.getSupportedCiphers(protocol);
                     }
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
@@ -295,7 +299,7 @@ public class SSLSocketTester {
                     && ignoredCiphersPattern.matcher(cipher).matches()) {
                     skipTesting = true;
                 }
-                if ((useOpensslClient || useGnutlsClient) && opensslCiphers != null) {
+                if ((useOpensslClient || useGnutlsClient || useNssClient) && opensslCiphers != null) {
                     if (!opensslCiphers.contains(cipher)) {
                         skipTesting = true;
                     }
@@ -356,6 +360,8 @@ public class SSLSocketTester {
             sslSocketClient = new OpensslClient();
         } else if (useGnutlsClient) {
             sslSocketClient = new GnutlsClient();
+        } else if (useNssClient) {
+            sslSocketClient = new NssClient();
         } else {
             sslSocketClient = new SSLSocketClient(
                 sslSocketFactory,

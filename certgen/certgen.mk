@@ -72,7 +72,9 @@ TRUSTSTORE_PASSWORD = changeit
 
 NSSDB_DIR = $(CERTGEN_BUILD_DIR)/nssdb
 NSSDB_PASSWORD = nss.SECret.123
-NSSDB_JAVA_SECURITY = $(CERTGEN_BUILD_DIR)/java.security
+NSSDB_FIPS ?= 0
+
+NSSDB_CLIENT_DIR = $(CERTGEN_BUILD_DIR)/nssdb-client
 
 CERTGEN_TEST_DIR = $(CERTGEN_DIR)/test
 CERTGEN_TEST_BUILD_DIR = $(CERTGEN_BUILD_DIR)/test
@@ -236,8 +238,14 @@ $(NSSDB_DIR): $(ROOT_CRT) $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA
 	pk12util -i $(KEYSORE_P12_RSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
 	pk12util -i $(KEYSORE_P12_EC) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
 	pk12util -i $(KEYSORE_P12_DSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
-	if ! [ -e /proc/sys/crypto/fips_enabled ] || ! [ 1 = $$(cat /proc/sys/crypto/fips_enabled) ] ; then \
+	if [ 1 = $(NSSDB_FIPS) ] ; then \
 		printf '\n' | modutil -fips true -dbdir $(NSSDB_DIR) ; \
 	fi
+
+$(NSSDB_CLIENT_DIR): $(ROOT_CRT)
+	mkdir $(NSSDB_CLIENT_DIR)
+	echo "" > $(NSSDB_CLIENT_DIR)/password.txt
+	certutil -N -d $(NSSDB_CLIENT_DIR) -f $(NSSDB_CLIENT_DIR)/password.txt
+	certutil -A -n rootca -i $(ROOT_CRT) -t C,, -d $(NSSDB_CLIENT_DIR) -f $(NSSDB_CLIENT_DIR)/password.txt
 
 include $(CERTGEN_TEST_DIR)/certgen-test.mk
