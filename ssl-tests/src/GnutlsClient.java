@@ -47,9 +47,30 @@ make clean && make SSLTESTS_USE_OPENSSL_CLIENT=1 SSLTESTS_SSL_CONFIG_FILTER='Sun
 
 public class GnutlsClient extends ExternalClient {
 
-    public GnutlsClient() {
+    /* supported commandline params */
+    static boolean clientLogfile = false;
+
+    static {
+        try {
+            checkFeatures();
+        } catch (Exception ex) {
+            Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
+
+    public GnutlsClient() {
+        skipData = !clientLogfile;
+    }
+
+    public static void checkFeatures() throws Exception {
+        List<String> clientHelp = getCommandOutput("gnutls-cli", "--help");
+        for (String line: clientHelp) {
+            if (line.trim().startsWith("--logfile")) {
+                clientLogfile = true;
+            }
+        }
+    }
 
     public static String getJavaProtoName(String gnuTlsProto) {
         switch (gnuTlsProto) {
@@ -71,7 +92,14 @@ public class GnutlsClient extends ExternalClient {
 
     public static HashSet getSupportedCiphers(String protocol) throws Exception {
         HashSet hs = new HashSet();
-        List<String> lines = ExternalClient.getCommandOutput("gnutls-cli", "--priority", "@SYSTEM", "--list");
+        String name;
+        Path path = FileSystems.getDefault().getPath("/etc/crypto-policies/back-ends/gnutls.config");
+        if (Files.exists(path)) {
+            name = "@SYSTEM";
+        } else {
+            name = "NORMAL";
+        }
+        List<String> lines = ExternalClient.getCommandOutput("gnutls-cli", "--priority", name, "--list");
         boolean cipherSuitesFound = false;
         String[] components;
         String cipherSuite;
@@ -111,7 +139,11 @@ public class GnutlsClient extends ExternalClient {
     }
 
     public ProcessBuilder getClientProcessBuilder(String host, int port, String cafile, String logfile) {
-        return new  ProcessBuilder("gnutls-cli", "--x509cafile=" + cafile, "--logfile=" + logfile, "--port=" + port, host);
+        if (clientLogfile) {
+            return new  ProcessBuilder("gnutls-cli", "--x509cafile=" + cafile, "--logfile=" + logfile, "--port=" + port, host);
+        } else {
+            return new  ProcessBuilder("gnutls-cli", "--x509cafile=" + cafile, "--port=" + port, host);
+        }
     }
 
 }
