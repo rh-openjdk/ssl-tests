@@ -41,10 +41,64 @@ import java.nio.file.FileSystems;
 public class OpensslClient extends ExternalClient {
 
     String cafile;
+    /* supported commandline params */
+    static boolean clientMsgfile = false;
+    static boolean listStdName = false;
+    static boolean listSupportedCiphers = false;
+    static boolean listTls13 = false;
+
+    static {
+        try {
+            checkFeatures();
+        } catch (Exception ex) {
+            Logger.getLogger(OpensslClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public OpensslClient() {
         cafile = System.getProperty("ssltests.cafile");
     }
+
+    public static void checkFeatures() throws Exception {
+        List<String> clientHelp = getCommandOutputAllIgnoreStatus("openssl", "s_client", "-help");
+        for (String line: clientHelp) {
+            if (line.trim().startsWith("-msgfile")) {
+                clientMsgfile = true;
+            }
+        }
+        List<String> ciphersHelp = getCommandOutputAllIgnoreStatus("openssl", "ciphers", "-help");
+        for (String line: ciphersHelp) {
+            String line1 = line.trim();
+            if (line1.startsWith("-stdname")) {
+                listStdName = true;
+            }
+            if (line1.startsWith("-s")) {
+                listSupportedCiphers = true;
+            }
+            if (line1.startsWith("-tls1_3")) {
+                listTls13 = true;
+            }
+        }
+    }
+
+    public static String convertCipherOpenssl(String cipher) {
+        if (cipher.startsWith("AES")) {
+            cipher = "TLS_RSA_WITH_" + cipher;
+        }
+        cipher = cipher.replace("ECDHE-ECDSA-", "TLS_ECDHE_ECDSA_WITH_");
+        cipher = cipher.replace("ECDHE-RSA-", "TLS_ECDHE_RSA_WITH_");
+        cipher = cipher.replace("DHE-RSA-", "TLS_DHE_RSA_WITH_");
+        cipher = cipher.replace("PSK-", "TLS_PSK_WITH_");
+        cipher = cipher.replace("DHE-PSK-", "TLS_DHE_PSK_WITH_");
+        cipher = cipher.replace("ECDHE-PSK-", "TLS_ECDHE_PSK_WITH_");
+        cipher = cipher.replace("AES128-SHA", "AES_128_CBC_SHA");
+        cipher = cipher.replace("AES256-SHA", "AES_256_CBC_SHA");
+        cipher = cipher.replace("AES128", "AES_128");
+        cipher = cipher.replace("AES256", "AES_256");
+        cipher = cipher.replace("-", "_");
+        return cipher;
+    }
+
 
     public static HashSet getSupportedCiphers(String protocol) throws Exception {
         HashSet hs = new HashSet();
@@ -69,8 +123,13 @@ public class OpensslClient extends ExternalClient {
         } else {
             name="DEFAULT";
         }
-        ProcessBuilder pb =
-            new ProcessBuilder("openssl", "ciphers", protoOption, "-s", "-stdname", name);
+        boolean fallback = (!listStdName || !listSupportedCiphers || !listTls13);
+        ProcessBuilder pb;
+        if (fallback) {
+            pb = new ProcessBuilder("openssl", "ciphers", name);
+        } else {
+            pb = new ProcessBuilder("openssl", "ciphers", protoOption, "-s", "-stdname", name);
+        }
         pb.redirectError(ProcessBuilder.Redirect.INHERIT);
         Process p = pb.start();
         p.getOutputStream().close();
@@ -79,11 +138,21 @@ public class OpensslClient extends ExternalClient {
             BufferedReader br = new BufferedReader(isr)) {
             String line = null;
             while ((line = br.readLine()) != null) {
-                int spaceIndex = line.indexOf(" ");
-                if (spaceIndex > 0) {
-                    line = line.substring(0, spaceIndex);
+                if (fallback) {
+                    String[] ciphers = line.split(":");
+                    for (String cipher : ciphers) {
+                        String cipherConverted = convertCipherOpenssl(cipher);
+                        if (testCompatible(protocol, cipherConverted, null)) {
+                            hs.add(cipherConverted);
+                        }
+                    }
+                } else {
+                    int spaceIndex = line.indexOf(" ");
+                    if (spaceIndex > 0) {
+                        line = line.substring(0, spaceIndex);
+                    }
+                    hs.add(line);
                 }
-                hs.add(line);
             }
         }
         int retval = p.waitFor();
@@ -94,7 +163,11 @@ public class OpensslClient extends ExternalClient {
     }
 
     public ProcessBuilder getClientProcessBuilder(String host, int port, String cafile, String msgFile) {
-        return new  ProcessBuilder("openssl", "s_client", "-connect", host + ":" + port, "-servername", host, "-CAfile", cafile, "-msg", "-msgfile", msgFile.toString(), "-quiet", "-no_ign_eof");
+        if (clientMsgfile) {
+            return new  ProcessBuilder("openssl", "s_client", "-connect", host + ":" + port, "-servername", host, "-CAfile", cafile, "-msg", "-msgfile", msgFile.toString(), "-quiet", "-no_ign_eof");
+        } else {
+            return new  ProcessBuilder("openssl", "s_client", "-connect", host + ":" + port, "-servername", host, "-CAfile", cafile, "-quiet", "-no_ign_eof");
+        }
     }
 
 }

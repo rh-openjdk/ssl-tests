@@ -79,7 +79,7 @@ public abstract class ExternalClient extends SSLSocketClient {
         }
     }
 
-    public static List<String> getCommandOutput(String... cmds) throws IOException {
+    public static List<String> getCommandOutput(boolean ignoreError, boolean bothOutputs, String... cmds) throws IOException {
         ProcessBuilder pb = new  ProcessBuilder(cmds);
         StreamReader outReader = null;
         StreamReader errReader = null;
@@ -103,7 +103,7 @@ public abstract class ExternalClient extends SSLSocketClient {
             if (p != null) {
                 try {
                     retval = p.waitFor();
-                    if (retval != 0) {
+                    if (!ignoreError && retval != 0) {
                         error = true;
                     }
                 } catch (InterruptedException ex) {
@@ -128,13 +128,25 @@ public abstract class ExternalClient extends SSLSocketClient {
                 }
             }
         }
-        if (retval != 0) {
+        if (!ignoreError && retval != 0) {
             throw new RuntimeException("Program exit value not zero: " + retval);
+        }
+        if (bothOutputs) {
+            List<String> output = new ArrayList<String>();
+            output.addAll(outReader.lines);
+            output.addAll(errReader.lines);
+            return output;
         }
         return outReader.lines;
     }
 
+    public static List<String> getCommandOutput(String... cmds) throws IOException {
+        return getCommandOutput(false, false, cmds);
+    }
 
+    public static List<String> getCommandOutputAllIgnoreStatus(String... cmds) throws IOException {
+        return getCommandOutput(true, true, cmds);
+    }
 
     public abstract ProcessBuilder getClientProcessBuilder(String host, int port, String cafile, String msgFile);
 
