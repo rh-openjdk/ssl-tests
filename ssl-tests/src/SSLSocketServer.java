@@ -135,7 +135,11 @@ public class SSLSocketServer {
                 }
                 // see: https://bugzilla.redhat.com/show_bug.cgi?id=1918473
                 if (shutdownOutput) {
-                    socket.shutdownOutput();
+                    try {
+                        socket.shutdownOutput();
+                    } catch (UnsupportedOperationException ex) {
+                        // ignored
+                    }
                 }
             }
         }
