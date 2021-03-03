@@ -101,6 +101,74 @@ jobs:
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
 
+  test-jdk11-pkcs11-nss-fips:
+    name: "Test JDK11 SunPKCS11-NSS-FIPS"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install nss"
+        run: sudo apt-get install libnss3 libnss3-tools
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run
+        run: |
+          # see: https://bugs.openjdk.java.net/browse/JDK-8237600
+          sudo ln -s /usr/lib/x86_64-linux-gnu /usr/lib64
+          make ssl-tests TEST_PKCS11_FIPS=1 SSLTESTS_ONLY_SSL_DEFAULTS=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
+
+  test-jdk11-openssl-client:
+    name: "Test JDK11 openssl client"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install openssl"
+        run: |
+          sudo apt-get install openssl
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run
+        run: make ssl-tests SSLTESTS_USE_OPENSSL_CLIENT=1
+
+  test-jdk11-gnutls-client:
+    name: "Test JDK11 gnutls client"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install gnutls"
+        run: |
+          sudo apt-get install gnutls-bin
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run
+        run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1
+
+  test-jdk11-nss-client:
+    name: "Test JDK11 nss client"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install nss"
+        run: |
+          sudo apt-get install libnss3-tools libnss3-dev gcc pkg-config
+          if ! type listsuites ; then
+              curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f20d37f/cmd/listsuites/listsuites.c
+              gcc $( pkg-config --cflags nss ) -o listsuites listsuites.c  $( pkg-config --libs nss )
+              sudo cp -a listsuites /usr/bin/
+              rm -f listsuites listsuites.c
+          fi
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run
+        run: make ssl-tests SSLTESTS_USE_NSS_CLIENT=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
+
   test-jdk14:
     name: "Test JDK14"
     runs-on: "ubuntu-latest"
