@@ -12,7 +12,6 @@ jobs:
   test-jdk8:
     name: "Test JDK8"
     runs-on: "ubuntu-latest"
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -22,10 +21,54 @@ jobs:
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
 
+  test-jdk8-openssl-client:
+    name: "Test JDK8 openssl client"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install openssl"
+        run: |
+          sudo apt-get install openssl
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Run
+        run: make ssl-tests SSLTESTS_USE_OPENSSL_CLIENT=1
+
+  test-jdk8-gnutls-client:
+    name: "Test JDK8 gnutls client"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install gnutls"
+        run: |
+          sudo apt-get install gnutls-bin
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Run
+        run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1
+
+  test-jdk8-nss-client:
+    name: "Test JDK8 nss client"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install nss"
+        run: |
+          sudo apt-get install libnss3-tools
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Run
+        run: make ssl-tests SSLTESTS_USE_NSS_CLIENT=1
+
   test-jdk11:
     name: "Test JDK11"
     runs-on: "ubuntu-latest"
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -38,7 +81,6 @@ jobs:
   test-jdk14:
     name: "Test JDK14"
     runs-on: "ubuntu-latest"
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
