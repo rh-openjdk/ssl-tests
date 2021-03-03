@@ -21,6 +21,23 @@ jobs:
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
 
+  test-jdk8-pkcs11-nss-fips:
+    name: "Test JDK8 SunPKCS11-NSS-FIPS"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install nss"
+        run: sudo apt-get install libnss3 libnss3-tools
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Run
+        run: |
+          # see: https://bugs.openjdk.java.net/browse/JDK-8237600
+          sudo ln -s /usr/lib/x86_64-linux-gnu /usr/lib64
+          make ssl-tests TEST_PKCS11_FIPS=1 SSLTESTS_ONLY_SSL_DEFAULTS=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
+
   test-jdk8-openssl-client:
     name: "Test JDK8 openssl client"
     runs-on: "ubuntu-latest"
