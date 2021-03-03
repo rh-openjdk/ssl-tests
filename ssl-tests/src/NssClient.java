@@ -52,6 +52,8 @@ public class NssClient extends ExternalClient {
             toolsPrefix = lib64PathStr;
         } else if (Files.exists(libPath)) {
             toolsPrefix = libPathStr;
+        } else {
+            toolsPrefix = "/usr/bin/";
         }
     }
 
