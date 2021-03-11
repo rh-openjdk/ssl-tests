@@ -14,14 +14,35 @@ NSSDB_FIPS := $(shell if [ 0 = $(FIPS_MODE_ENABLED) ] && [ 1 = $(TEST_PKCS11_FIP
 JAVA_PKCS11_FIPS_CONF_DIR = build/java-conf
 JAVA_PKCS11_FIPS_NSS_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/nss.fips.cfg
 JAVA_PKCS11_FIPS_SECURITY_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/java.security
-JAVA_PKCS11_FIPS_PARAMS := $(shell if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' ; then printf '%s' '-Dcom.redhat.fips=true' ;  else printf '%s' '-Djavax.net.ssl.keyStore=NONE' ; fi ; fi )
-
 
 all: ssl-tests
 
 CERTGEN_DIR = certgen
 CERTGEN_BUILD_DIR = build/certgen
 include $(CERTGEN_DIR)/certgen.mk
+
+JAVA_SECURITY_PARAMS := $(shell \
+    if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
+        printf '%s ' -Djava.security.properties==$(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
+        if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' ; then \
+            printf '%s ' '-Dcom.redhat.fips=true' ; \
+        else \
+            printf '%s ' '-Djavax.net.ssl.keyStore=NONE' ; \
+        fi ; \
+    else \
+        printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_JKS) ; \
+        printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
+        printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_JKS) ; \
+        printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+    fi ; \
+)
+JAVA_SECURITY_DEPS := $(shell \
+    if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
+        printf '%s ' $(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
+    else \
+        printf '%s %s ' $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) ; \
+    fi ; \
+)
 
 SSLCONTEXTINFO_DIR = SSLContextInfo
 SSLCONTEXTINFO_CLASSES_DIR = build/SSLContextInfo
