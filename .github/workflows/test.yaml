@@ -11,7 +11,7 @@ on:
 jobs:
   test-jdk8:
     name: "Test JDK8"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -23,7 +23,7 @@ jobs:
 
   test-jdk8-pkcs11-nss-fips:
     name: "Test JDK8 SunPKCS11-NSS-FIPS"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install nss"
         run: sudo apt-get install libnss3 libnss3-tools
@@ -40,7 +40,7 @@ jobs:
 
   test-jdk8-openssl-client:
     name: "Test JDK8 openssl client"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install openssl"
         run: |
@@ -55,7 +55,7 @@ jobs:
 
   test-jdk8-gnutls-client:
     name: "Test JDK8 gnutls client"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install gnutls"
         run: |
@@ -70,7 +70,7 @@ jobs:
 
   test-jdk8-nss-client:
     name: "Test JDK8 nss client"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install nss"
         run: |
@@ -91,7 +91,7 @@ jobs:
 
   test-jdk11:
     name: "Test JDK11"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -103,7 +103,7 @@ jobs:
 
   test-jdk11-pkcs11-nss-fips:
     name: "Test JDK11 SunPKCS11-NSS-FIPS"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install nss"
         run: sudo apt-get install libnss3 libnss3-tools
@@ -120,7 +120,7 @@ jobs:
 
   test-jdk11-openssl-client:
     name: "Test JDK11 openssl client"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install openssl"
         run: |
@@ -135,7 +135,7 @@ jobs:
 
   test-jdk11-gnutls-client:
     name: "Test JDK11 gnutls client"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install gnutls"
         run: |
@@ -150,7 +150,7 @@ jobs:
 
   test-jdk11-nss-client:
     name: "Test JDK11 nss client"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - name: "Install nss"
         run: |
@@ -171,7 +171,7 @@ jobs:
 
   test-jdk14:
     name: "Test JDK14"
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-18.04"
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
