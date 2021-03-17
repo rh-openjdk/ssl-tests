@@ -64,10 +64,12 @@ CA_CHAIN_CRT = $(CERTGEN_BUILD_DIR)/cachain.crt
 KEYSORE_P12_RSA = $(CERTGEN_BUILD_DIR)/keystore-rsa.p12
 KEYSORE_P12_EC = $(CERTGEN_BUILD_DIR)/keystore-ec.p12
 KEYSORE_P12_DSA = $(CERTGEN_BUILD_DIR)/keystore-dsa.p12
+KEYSTORE_P12 = $(CERTGEN_BUILD_DIR)/keystore.p12
 KEYSTORE_JKS = $(CERTGEN_BUILD_DIR)/keystore.jks
 KEYSTORE_PASSWORD = changeit
 
 TRUSTSTORE_JKS = $(CERTGEN_BUILD_DIR)/truststore.jks
+TRUSTSTORE_P12 = $(CERTGEN_BUILD_DIR)/truststore.p12
 TRUSTSTORE_PASSWORD = changeit
 
 NSSDB_DIR = $(CERTGEN_BUILD_DIR)/nssdb
@@ -202,26 +204,40 @@ $(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
 	-name server-dsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_DSA)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
-# create java keystore
-$(KEYSTORE_JKS): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
+# create p12 keystore
+$(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
 	$(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_RSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
-	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
+	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
 	$(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
-	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
+	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
 	$(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
+	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
+	-deststorepass $(KEYSTORE_PASSWORD) \
+	-noprompt -v
+
+# create java keystore
+$(KEYSTORE_JKS): $(KEYSTORE_P12)
+	$(KEYTOOL) -importkeystore \
+	-srckeystore $(KEYSTORE_P12) -srcstoretype PKCS12 \
+	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
+
+# create truststore with root CA cert
+$(TRUSTSTORE_P12): $(ROOT_CRT)
+	$(KEYTOOL) -import -file $(ROOT_CRT) -alias rootca \
+	-keystore $(TRUSTSTORE_P12) -storetype PKCS12 -storepass $(TRUSTSTORE_PASSWORD) -noprompt
 
 # create truststore with root CA cert
 $(TRUSTSTORE_JKS): $(ROOT_CRT)

@@ -11,9 +11,20 @@ FIPS_MODE_ENABLED := $(shell if [ -e "/proc/sys/crypto/fips_enabled" ] && [ 1 = 
 TEST_PKCS11_FIPS ?= $(shell if [ 1 = $(FIPS_MODE_ENABLED) ] && [ -n "$(JAVA_HOME_DIR)" ] && cat $(JAVA_CONF_DIR)/security/java.security 2>&1 | grep -q '^fips.provider' ; then echo 1; else echo 0 ; fi )
 NSSDB_FIPS := $(shell if [ 0 = $(FIPS_MODE_ENABLED) ] && [ 1 = $(TEST_PKCS11_FIPS) ] ; then echo 1 ; else echo 0 ; fi )
 
-JAVA_PKCS11_FIPS_CONF_DIR = build/java-conf
+JAVA_PKCS11_FIPS_CONF_DIR = build/java-pkcs11-conf
 JAVA_PKCS11_FIPS_NSS_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/nss.fips.cfg
 JAVA_PKCS11_FIPS_SECURITY_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/java.security
+
+BC_JARS_DIRS = build/bc-jars
+BC_BCPROV_JAR = $(BC_JARS_DIRS)/bcprov-ext-jdk15on-168.jar
+BC_BCTLS_JAR = $(BC_JARS_DIRS)/bctls-jdk15on-168.jar
+BC_BCPKIX_JAR = $(BC_JARS_DIRS)/bcpkix-jdk15on-168.jar
+
+JAVA_BC_CONF_DIR = build/java-bc-conf
+JAVA_BC_SECURITY_CFG = $(JAVA_BC_CONF_DIR)/java.security
+
+JAVA_BCJSSE_CONF_DIR = build/java-bcjsse-conf
+JAVA_BCJSSE_SECURITY_CFG = $(JAVA_BCJSSE_CONF_DIR)/java.security
 
 all: ssl-tests
 
@@ -22,7 +33,19 @@ CERTGEN_BUILD_DIR = build/certgen
 include $(CERTGEN_DIR)/certgen.mk
 
 JAVA_SECURITY_PARAMS := $(shell \
-    if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
+    if [ 1 = "$(TEST_BC)" ] ; then \
+        printf '%s ' -Djava.security.properties==$(JAVA_BC_SECURITY_CFG) ; \
+        printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
+        printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
+        printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_P12) ; \
+        printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+    elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
+        printf '%s ' -Djava.security.properties==$(JAVA_BCJSSE_SECURITY_CFG) ; \
+        printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
+        printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
+        printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_P12) ; \
+        printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+    elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
         if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' ; then \
             printf '%s ' '-Dcom.redhat.fips=true' ; \
@@ -37,10 +60,21 @@ JAVA_SECURITY_PARAMS := $(shell \
     fi ; \
 )
 JAVA_SECURITY_DEPS := $(shell \
-    if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
+    if [ 1 = "$(TEST_BC)" ] ; then \
+        printf '%s %s %s %s %s ' $(JAVA_BC_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
+    elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
+        printf '%s %s %s %s %s %s ' $(JAVA_BCJSSE_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
+    elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' $(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
     else \
         printf '%s %s ' $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) ; \
+    fi ; \
+)
+JAVA_CP_APPEND := $(shell \
+    if [ 1 = "$(TEST_BC)" ] ; then \
+        printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
+    elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
+        printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
     fi ; \
 )
 
@@ -62,6 +96,15 @@ clean:
 $(JAVA_PKCS11_FIPS_CONF_DIR):
 	mkdir $@
 
+$(JAVA_BC_CONF_DIR):
+	mkdir $@
+
+$(JAVA_BCJSSE_CONF_DIR):
+	mkdir $@
+
+$(BC_JARS_DIRS):
+	mkdir $@
+
 $(JAVA_PKCS11_FIPS_NSS_CFG): | $(JAVA_PKCS11_FIPS_CONF_DIR)
 	if [ -e $(JAVA_CONF_DIR)/security/nss.fips.cfg ] ; then \
 		cp $(JAVA_CONF_DIR)/security/nss.fips.cfg $@ ; \
@@ -78,7 +121,7 @@ $(JAVA_PKCS11_FIPS_NSS_CFG): | $(JAVA_PKCS11_FIPS_CONF_DIR)
 
 $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FIPS_CONF_DIR) $(NSSDB_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
-	if cat build/java-conf/java.security | grep -q '^fips.provider' ; then \
+	if cat $@ | grep -q '^fips.provider' ; then \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 			sed -i 's;^fips.provider.1=sun.security.pkcs11.SunPKCS11.*$$;fips.provider.1=sun.security.pkcs11.SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ; \
 		else \
@@ -106,5 +149,78 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 			>> $@ ; \
 		fi ; \
 	fi
+
+
+$(BC_BCPROV_JAR): | $(BC_JARS_DIRS)
+	#curl -L -f -o $(BC_BCPROV_JAR) "https://www.bouncycastle.org/download/bcprov-jdk15on-168.jar"
+	cp ~/Downloads/bcprov-ext-jdk15on-168.jar $(BC_BCPROV_JAR)
+
+$(BC_BCTLS_JAR): | $(BC_JARS_DIRS)
+	#curl -L -f -o $(BC_BCTLS_JAR) "https://www.bouncycastle.org/download/bctls-jdk15on-168.jar"
+	cp ~/Downloads/bctls-jdk15on-168.jar $(BC_BCTLS_JAR)
+
+$(BC_BCPKIX_JAR): | $(BC_JARS_DIRS)
+	#curl -L -f -o $(BC_BCTLS_JAR) "https://www.bouncycastle.org/download/bcpkix-jdk15on-168.jar"
+	cp ~/Downloads/bcpkix-jdk15on-168.jar $(BC_BCPKIX_JAR)
+
+# See: https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
+$(JAVA_BC_SECURITY_CFG): | $(JAVA_BC_CONF_DIR)
+	cp $(JAVA_CONF_DIR)/security/java.security $@
+	if cat $@ | grep -q '^fips.provider' ; then \
+		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
+		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
+			printf '%s\n%s\n%s\n' \
+			"fips.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
+			"fips.provider.2=com.sun.net.ssl.internal.ssl.Provider BC" \
+			"fips.provider.3=sun.security.provider.Sun" \
+			>> $@ ; \
+		else \
+			printf '%s\n%s\n%s\n' \
+			"fips.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
+			"fips.provider.2=SunJSSE BC" \
+			"fips.provider.3=sun.security.provider.Sun" \
+			>> $@ ; \
+		fi ; \
+	fi
+	sed -i 's;^security.provider;#security.provider;g' $@
+	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
+	if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
+		printf '%s\n%s\n%s\n%s\n' \
+		"security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
+		"security.provider.2=com.sun.net.ssl.internal.ssl.Provider BC" \
+		"security.provider.3=sun.security.provider.Sun" \
+		"ssl.KeyManagerFactory.algorithm=X509" \
+		>> $@ ; \
+	else \
+		printf '%s\n%s\n%s\n' \
+		"security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
+		"security.provider.2=SunJSSE BC" \
+		"security.provider.3=sun.security.provider.Sun" \
+		>> $@ ; \
+	fi
+
+# See: https://downloads.bouncycastle.org/fips-java/BC-FJA-(D)TLSUserGuide-1.0.9.pdf
+$(JAVA_BCJSSE_SECURITY_CFG): | $(JAVA_BCJSSE_CONF_DIR)
+	cp $(JAVA_CONF_DIR)/security/java.security $@
+	if cat $@ | grep -q '^fips.provider' ; then \
+		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
+		printf '%s\n%s\n%s\n' \
+		"fips.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
+		"fips.provider.2=org.bouncycastle.jsse.provider.BouncyCastleJsseProvider BC" \
+		"fips.provider.3=sun.security.provider.Sun" \
+		>> $@ ; \
+	fi
+	sed -i 's;^security.provider;#security.provider;g' $@
+	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
+	printf '%s\n%s\n%s\n' \
+	"security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
+	"security.provider.2=org.bouncycastle.jsse.provider.BouncyCastleJsseProvider BC" \
+	"security.provider.3=sun.security.provider.Sun" \
+	>> $@ ;
+	# http://bouncy-castle.1462172.n4.nabble.com/BC-FIPS-does-not-reject-JKS-keystores-tp4659800.html
+	printf '%s\n' \
+	"ssl.KeyManagerFactory.algorithm=X509" \
+	>> $@ ;
+
 
 java-pkcs11-fips-conf: $(JAVA_PKCS11_FIPS_SECURITY_CFG)
