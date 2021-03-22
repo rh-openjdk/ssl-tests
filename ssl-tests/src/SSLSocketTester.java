@@ -30,6 +30,7 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -241,6 +242,7 @@ public class SSLSocketTester {
         SSLParameters sslParameters
                 = onlySSLDefaults ? sslServerContext.getDefaultSSLParameters()
                         : sslServerContext.getSupportedSSLParameters();
+        boolean isBC = sslClientContext.getProvider().getName().equals("BCJSSE");
         for (String protocol
                 : sslParameters.getProtocols()) {
             boolean skippedProtocol = false;
@@ -257,15 +259,25 @@ public class SSLSocketTester {
                 && ignoredProtocolsPattern.matcher(protocol).matches()) {
                     skippedProtocol = true;
             }
-            Set opensslCiphers = null;
+            Set validCiphers = null;
             if (!skippedProtocol) {
                 try {
                     if (useOpensslClient) {
-                        opensslCiphers = OpensslClient.getSupportedCiphers(protocol);
+                        validCiphers = OpensslClient.getSupportedCiphers(protocol);
                     } else if (useGnutlsClient) {
-                        opensslCiphers = GnutlsClient.getSupportedCiphers(protocol);
+                        validCiphers = GnutlsClient.getSupportedCiphers(protocol);
                     } else if (useNssClient) {
-                        opensslCiphers = NssClient.getSupportedCiphers(protocol);
+                        validCiphers = NssClient.getSupportedCiphers(protocol);
+                    } else if (isBC) {
+                        SSLParameters sslparams = onlySSLDefaults ?
+                        sslClientContext.getDefaultSSLParameters() :
+                        sslClientContext.getSupportedSSLParameters();
+                        validCiphers = new HashSet();
+                        for (String cipher : sslparams.getCipherSuites()) {
+                            if (ExternalClient.testCompatible(protocol, cipher, null)) {
+                                validCiphers.add(cipher);
+                            }
+                        }
                     }
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
@@ -301,8 +313,9 @@ public class SSLSocketTester {
                     && ignoredCiphersPattern.matcher(cipher).matches()) {
                     skipTesting = true;
                 }
-                if ((useOpensslClient || useGnutlsClient || useNssClient) && opensslCiphers != null) {
-                    if (!opensslCiphers.contains(cipher)) {
+
+                if ((useOpensslClient || useGnutlsClient || useNssClient || isBC) && validCiphers != null) {
+                    if (!validCiphers.contains(cipher)) {
                         skipTesting = true;
                     }
                 }

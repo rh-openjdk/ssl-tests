@@ -206,19 +206,19 @@ $(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
 
 # create p12 keystore
 $(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
-	$(KEYTOOL) -importkeystore \
+	JAVA_TOOL_OPTIONS="" $(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_RSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
-	$(KEYTOOL) -importkeystore \
+	JAVA_TOOL_OPTIONS="" $(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
-	$(KEYTOOL) -importkeystore \
+	JAVA_TOOL_OPTIONS="" $(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \

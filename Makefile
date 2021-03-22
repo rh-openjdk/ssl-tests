@@ -152,18 +152,21 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 
 
 $(BC_BCPROV_JAR): | $(BC_JARS_DIRS)
-	#curl -L -f -o $(BC_BCPROV_JAR) "https://www.bouncycastle.org/download/bcprov-jdk15on-168.jar"
-	cp ~/Downloads/bcprov-ext-jdk15on-168.jar $(BC_BCPROV_JAR)
+	curl -L -f -o $(BC_BCPROV_JAR) "https://www.bouncycastle.org/download/bcprov-jdk15on-168.jar"
+	#cp ~/Downloads/bcprov-ext-jdk15on-168.jar $(BC_BCPROV_JAR)
 
 $(BC_BCTLS_JAR): | $(BC_JARS_DIRS)
-	#curl -L -f -o $(BC_BCTLS_JAR) "https://www.bouncycastle.org/download/bctls-jdk15on-168.jar"
-	cp ~/Downloads/bctls-jdk15on-168.jar $(BC_BCTLS_JAR)
+	curl -L -f -o $(BC_BCTLS_JAR) "https://www.bouncycastle.org/download/bctls-jdk15on-168.jar"
+	#cp ~/Downloads/bctls-jdk15on-168.jar $(BC_BCTLS_JAR)
 
 $(BC_BCPKIX_JAR): | $(BC_JARS_DIRS)
-	#curl -L -f -o $(BC_BCTLS_JAR) "https://www.bouncycastle.org/download/bcpkix-jdk15on-168.jar"
-	cp ~/Downloads/bcpkix-jdk15on-168.jar $(BC_BCPKIX_JAR)
+	curl -L -f -o $(BC_BCPKIX_JAR) "https://www.bouncycastle.org/download/bcpkix-jdk15on-168.jar"
+	#cp ~/Downloads/bcpkix-jdk15on-168.jar $(BC_BCPKIX_JAR)
 
 # See: https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
+# this setup seems problematic as BC does not provide "SunTlsMasterSecret":
+# https://github.com/openjdk/jdk/blob/05a764f4ffb8030d6b768f2d362c388e5aabd92d/src/java.base/share/classes/sun/security/ssl/SSLMasterKeyDerivation.java#L105
+# this prevents testing anything else than TLSv1.3
 $(JAVA_BC_SECURITY_CFG): | $(JAVA_BC_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
 	if cat $@ | grep -q '^fips.provider' ; then \
@@ -189,7 +192,7 @@ $(JAVA_BC_SECURITY_CFG): | $(JAVA_BC_CONF_DIR)
 		"security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
 		"security.provider.2=com.sun.net.ssl.internal.ssl.Provider BC" \
 		"security.provider.3=sun.security.provider.Sun" \
-		"ssl.KeyManagerFactory.algorithm=X509" \
+		"ssl.KeyManagerFactory.algorithm=PKIX" \
 		>> $@ ; \
 	else \
 		printf '%s\n%s\n%s\n' \
