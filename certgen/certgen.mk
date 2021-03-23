@@ -206,24 +206,26 @@ $(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
 
 # create p12 keystore
 $(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
-	JAVA_TOOL_OPTIONS="" $(KEYTOOL) -importkeystore \
+	$(KEYTOOL_JTO) $(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_RSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
-	JAVA_TOOL_OPTIONS="" $(KEYTOOL) -importkeystore \
+	$(KEYTOOL_JTO) $(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
-	JAVA_TOOL_OPTIONS="" $(KEYTOOL) -importkeystore \
+	if [ -z "$(KEYTOOL_JTO)" ] ; then \
+	$(KEYTOOL_JTO) $(KEYTOOL) -importkeystore \
 	-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
-	-noprompt -v
+	-noprompt -v ; \
+	fi
 
 # create java keystore
 $(KEYSTORE_JKS): $(KEYSTORE_P12)
@@ -236,7 +238,7 @@ $(KEYSTORE_JKS): $(KEYSTORE_P12)
 
 # create truststore with root CA cert
 $(TRUSTSTORE_P12): $(ROOT_CRT)
-	$(KEYTOOL) -import -file $(ROOT_CRT) -alias rootca \
+	$(KEYTOOL_JTO) $(KEYTOOL) -import -file $(ROOT_CRT) -alias rootca \
 	-keystore $(TRUSTSTORE_P12) -storetype PKCS12 -storepass $(TRUSTSTORE_PASSWORD) -noprompt
 
 # create truststore with root CA cert
