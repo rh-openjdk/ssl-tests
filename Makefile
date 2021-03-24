@@ -17,9 +17,13 @@ JAVA_PKCS11_FIPS_NSS_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/nss.fips.cfg
 JAVA_PKCS11_FIPS_SECURITY_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/java.security
 
 BC_JARS_DIRS = build/bc-jars
-BC_BCPROV_JAR = $(BC_JARS_DIRS)/bcprov-ext-jdk15on-168.jar
-BC_BCTLS_JAR = $(BC_JARS_DIRS)/bctls-jdk15on-168.jar
-BC_BCPKIX_JAR = $(BC_JARS_DIRS)/bcpkix-jdk15on-168.jar
+BC_VERSION = 1.68
+BC_BCPROV_VERSION = $(BC_VERSION)
+BC_BCTLS_VERSION = $(BC_VERSION)
+BC_BCPKIX_VERSION = $(BC_VERSION)
+BC_BCPROV_JAR = $(BC_JARS_DIRS)/bcprov-jdk15on-$(BC_BCPROV_VERSION).jar
+BC_BCTLS_JAR = $(BC_JARS_DIRS)/bctls-jdk15on-$(BC_BCTLS_VERSION).jar
+BC_BCPKIX_JAR = $(BC_JARS_DIRS)/bcpkix-jdk15on-$(BC_BCPKIX_VERSION).jar
 
 JAVA_BC_CONF_DIR = build/java-bc-conf
 JAVA_BC_SECURITY_CFG = $(JAVA_BC_CONF_DIR)/java.security
@@ -153,15 +157,15 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 
 
 $(BC_BCPROV_JAR): | $(BC_JARS_DIRS)
-	curl -L -f -o $(BC_BCPROV_JAR) "https://www.bouncycastle.org/download/bcprov-jdk15on-168.jar"
+	curl -L -f -o $(BC_BCPROV_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/$(BC_BCPROV_VERSION)/bcprov-jdk15on-$(BC_BCPROV_VERSION).jar"
 	#cp ~/Downloads/bcprov-ext-jdk15on-168.jar $(BC_BCPROV_JAR)
 
 $(BC_BCTLS_JAR): | $(BC_JARS_DIRS)
-	curl -L -f -o $(BC_BCTLS_JAR) "https://www.bouncycastle.org/download/bctls-jdk15on-168.jar"
+	curl -L -f -o $(BC_BCTLS_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bctls-jdk15on/$(BC_BCTLS_VERSION)/bctls-jdk15on-$(BC_BCTLS_VERSION).jar"
 	#cp ~/Downloads/bctls-jdk15on-168.jar $(BC_BCTLS_JAR)
 
 $(BC_BCPKIX_JAR): | $(BC_JARS_DIRS)
-	curl -L -f -o $(BC_BCPKIX_JAR) "https://www.bouncycastle.org/download/bcpkix-jdk15on-168.jar"
+	curl -L -f -o $(BC_BCPKIX_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/$(BC_BCPKIX_VERSION)/bcpkix-jdk15on-$(BC_BCPKIX_VERSION).jar"
 	#cp ~/Downloads/bcpkix-jdk15on-168.jar $(BC_BCPKIX_JAR)
 
 # See: https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
