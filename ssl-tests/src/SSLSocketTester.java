@@ -96,7 +96,7 @@ public class SSLSocketTester {
             clientTrustManagers = getTrustManagers(clientTruststoreFile,
                     clientTruststorePassword);
         }
-        onlySSLDefaults = getBooleanProperty("ssltests.onlyssldefaults", false);
+        onlySSLDefaults = getBooleanProperty("ssltests.onlyssldefaults", true);
         String sslConfigFilter = System.getProperty("ssltests.sslconfigFilter");
         if (sslConfigFilter != null) {
             String[] sslConfigFilterParts1 = sslConfigFilter.split(",");

@@ -36,7 +36,7 @@ jobs:
         run: |
           # see: https://bugs.openjdk.java.net/browse/JDK-8237600
           sudo ln -s /usr/lib/x86_64-linux-gnu /usr/lib64
-          make ssl-tests TEST_PKCS11_FIPS=1 SSLTESTS_ONLY_SSL_DEFAULTS=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
+          make ssl-tests TEST_PKCS11_FIPS=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
 
   test-jdk8-openssl-client:
     name: "Test JDK8 openssl client"
@@ -99,7 +99,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Run
-        run: make ssl-tests TEST_BCJSSE=1 SSLTESTS_ONLY_SSL_DEFAULTS=1
+        run: make ssl-tests TEST_BCJSSE=1
 
   test-jdk8-bc:
     name: "Test JDK8 BC"
@@ -111,7 +111,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Run
-        run: make ssl-tests TEST_BC=1 SSLTESTS_ONLY_SSL_DEFAULTS=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
+        run: make ssl-tests TEST_BC=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
 
   test-jdk8-bc-2nd:
     name: "Test JDK8 BC 2ND"
@@ -123,7 +123,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Run
-        run: make ssl-tests TEST_BC_2ND=1 SSLTESTS_ONLY_SSL_DEFAULTS=1
+        run: make ssl-tests TEST_BC_2ND=1
 
   test-jdk11:
     name: "Test JDK11"
@@ -152,7 +152,7 @@ jobs:
         run: |
           # see: https://bugs.openjdk.java.net/browse/JDK-8237600
           sudo ln -s /usr/lib/x86_64-linux-gnu /usr/lib64
-          make ssl-tests TEST_PKCS11_FIPS=1 SSLTESTS_ONLY_SSL_DEFAULTS=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
+          make ssl-tests TEST_PKCS11_FIPS=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
 
   test-jdk11-openssl-client:
     name: "Test JDK11 openssl client"
@@ -215,7 +215,7 @@ jobs:
         with:
           java-version: 11
       - name: Run
-        run: make ssl-tests TEST_BCJSSE=1 SSLTESTS_ONLY_SSL_DEFAULTS=1
+        run: make ssl-tests TEST_BCJSSE=1
 
   test-jdk11-bc:
     name: "Test JDK11 BC"
@@ -227,7 +227,7 @@ jobs:
         with:
           java-version: 11
       - name: Run
-        run: make ssl-tests TEST_BC=1 SSLTESTS_ONLY_SSL_DEFAULTS=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
+        run: make ssl-tests TEST_BC=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
 
   test-jdk11-bc-2nd:
     name: "Test JDK11 BC 2ND"
@@ -239,7 +239,7 @@ jobs:
         with:
           java-version: 11
       - name: Run
-        run: make ssl-tests TEST_BC_2ND=1 SSLTESTS_ONLY_SSL_DEFAULTS=1
+        run: make ssl-tests TEST_BC_2ND=1
 
   test-jdk14:
     name: "Test JDK14"
