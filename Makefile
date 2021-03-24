@@ -31,6 +31,9 @@ JAVA_BC_SECURITY_CFG = $(JAVA_BC_CONF_DIR)/java.security
 JAVA_BCJSSE_CONF_DIR = build/java-bcjsse-conf
 JAVA_BCJSSE_SECURITY_CFG = $(JAVA_BCJSSE_CONF_DIR)/java.security
 
+JAVA_BC_2ND_CONF_DIR = build/java-bc-2nd-conf
+JAVA_BC_2ND_SECURITY_CFG = $(JAVA_BC_2ND_CONF_DIR)/java.security
+
 all: ssl-tests
 
 CERTGEN_DIR = certgen
@@ -46,6 +49,12 @@ JAVA_SECURITY_PARAMS := $(shell \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_BCJSSE_SECURITY_CFG) ; \
+        printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
+        printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
+        printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_P12) ; \
+        printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+    elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
+        printf '%s ' -Djava.security.properties==$(JAVA_BC_2ND_SECURITY_CFG) ; \
         printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
         printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
         printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_P12) ; \
@@ -69,6 +78,8 @@ JAVA_SECURITY_DEPS := $(shell \
         printf '%s %s %s %s %s ' $(JAVA_BC_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
         printf '%s %s %s %s %s %s ' $(JAVA_BCJSSE_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
+    elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
+        printf '%s %s %s %s %s %s ' $(JAVA_BC_2ND_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' $(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
     else \
@@ -79,6 +90,8 @@ JAVA_CP_APPEND := $(shell \
     if [ 1 = "$(TEST_BC)" ] ; then \
         printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
+        printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
+    elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
         printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
     fi ; \
 )
@@ -105,6 +118,9 @@ $(JAVA_BC_CONF_DIR):
 	mkdir $@
 
 $(JAVA_BCJSSE_CONF_DIR):
+	mkdir $@
+
+$(JAVA_BC_2ND_CONF_DIR):
 	mkdir $@
 
 $(BC_JARS_DIRS):
@@ -230,5 +246,29 @@ $(JAVA_BCJSSE_SECURITY_CFG): | $(JAVA_BCJSSE_CONF_DIR)
 	"ssl.KeyManagerFactory.algorithm=X509" \
 	>> $@ ;
 
+# BC inserted as second provider, see:
+# https://docs.oracle.com/cd/E19830-01/819-4712/ablsc/index.html
+# http://tomee.apache.org/bouncy-castle.html
+# https://bugs.openjdk.java.net/browse/JDK-8256252
+$(JAVA_BC_2ND_SECURITY_CFG): | $(JAVA_BC_2ND_CONF_DIR)
+	cp $(JAVA_CONF_DIR)/security/java.security $@
+	i=2 ; \
+	while cat $@ | grep -q "^security.provider.$${i}[[:space:]]*=" ; do \
+		i=$$(( i + 1 )) ; \
+	done ; \
+	while [ $${i} -ge 2 ] ; do \
+		sed -i "s;^security.provider.$${i}[[:space:]]*=;security.provider.$$(( i + 1 ))=;g"  $@ ; \
+		i=$$(( i - 1 )) ; \
+	done
+	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
+	printf '%s\n' \
+	"security.provider.2=org.bouncycastle.jce.provider.BouncyCastleProvider" \
+	>> $@ ;
+	if cat $@ | grep -q '^fips.provider' ; then \
+		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
+	    providers="$$( cat $@ | grep '^security.provider.*$$' )" ; \
+	    printf '%s\n' "$${providers}" | sed 's;^security.provider;fips.provider;g' \
+	    >> $@ ; \
+	fi
 
 java-pkcs11-fips-conf: $(JAVA_PKCS11_FIPS_SECURITY_CFG)

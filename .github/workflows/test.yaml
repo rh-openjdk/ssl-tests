@@ -113,6 +113,18 @@ jobs:
       - name: Run
         run: make ssl-tests TEST_BC=1 SSLTESTS_ONLY_SSL_DEFAULTS=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
 
+  test-jdk8-bc-2nd:
+    name: "Test JDK8 BC 2ND"
+    runs-on: "ubuntu-18.04"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Run
+        run: make ssl-tests TEST_BC_2ND=1 SSLTESTS_ONLY_SSL_DEFAULTS=1
+
   test-jdk11:
     name: "Test JDK11"
     runs-on: "ubuntu-18.04"
@@ -216,6 +228,18 @@ jobs:
           java-version: 11
       - name: Run
         run: make ssl-tests TEST_BC=1 SSLTESTS_ONLY_SSL_DEFAULTS=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
+
+  test-jdk11-bc-2nd:
+    name: "Test JDK11 BC 2ND"
+    runs-on: "ubuntu-18.04"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run
+        run: make ssl-tests TEST_BC_2ND=1 SSLTESTS_ONLY_SSL_DEFAULTS=1
 
   test-jdk14:
     name: "Test JDK14"
