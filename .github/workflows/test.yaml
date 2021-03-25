@@ -240,7 +240,12 @@ jobs:
         with:
           java-version: 11
       - name: Run
-        run: make ssl-tests TEST_BC_2ND=1
+        run: |
+          # EDCHE ciphers are excluded on jdk >= 11 as there is bug in current BC (1.68)
+          # causing these ciphers to randomly fail, see:
+          # https://github.com/bcgit/bc-java/issues/862
+          # It should be fixed in BC 1.69, then this workaround can be removed
+          make ssl-tests TEST_BC_2ND=1 SSLTESTS_IGNORE_CIPHERS=TLS_ECDHE.*
 
   test-jdk14:
     name: "Test JDK14"
