@@ -25,8 +25,11 @@ BC_BCPROV_JAR = $(BC_JARS_DIRS)/bcprov-jdk15on-$(BC_BCPROV_VERSION).jar
 BC_BCTLS_JAR = $(BC_JARS_DIRS)/bctls-jdk15on-$(BC_BCTLS_VERSION).jar
 BC_BCPKIX_JAR = $(BC_JARS_DIRS)/bcpkix-jdk15on-$(BC_BCPKIX_VERSION).jar
 
-JAVA_BC_CONF_DIR = build/java-bc-conf
-JAVA_BC_SECURITY_CFG = $(JAVA_BC_CONF_DIR)/java.security
+BC_BCFIPS_VERSION = 1.0.2
+BC_BCFIPS_JAR = $(BC_JARS_DIRS)/bc-fips-$(BC_BCFIPS_VERSION).jar
+
+JAVA_BCFIPS_CONF_DIR = build/java-bcfips-conf
+JAVA_BCFIPS_SECURITY_CFG = $(JAVA_BCFIPS_CONF_DIR)/java.security
 
 JAVA_BCJSSE_CONF_DIR = build/java-bcjsse-conf
 JAVA_BCJSSE_SECURITY_CFG = $(JAVA_BCJSSE_CONF_DIR)/java.security
@@ -40,13 +43,19 @@ CERTGEN_DIR = certgen
 CERTGEN_BUILD_DIR = build/certgen
 include $(CERTGEN_DIR)/certgen.mk
 
+# BCFIPS needs workaround for jdk>=13:
+# https://github.com/bcgit/bc-java/issues/589#issuecomment-530780788
 JAVA_SECURITY_PARAMS := $(shell \
-    if [ 1 = "$(TEST_BC)" ] ; then \
-        printf '%s ' -Djava.security.properties==$(JAVA_BC_SECURITY_CFG) ; \
+    if [ 1 = "$(TEST_BCFIPS)" ] ; then \
+        printf '%s ' -Djava.security.properties==$(JAVA_BCFIPS_SECURITY_CFG) ; \
         printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
         printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
         printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_P12) ; \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+        printf '%s ' -Dorg.bouncycastle.rsa.allow_multi_use=true ; \
+        if [ 13 -le $(JAVA_VERSION_MAJOR) ] ; then \
+            printf '%s ' '-Djdk.tls.namedGroups="secp256r1, secp384r1, ffdhe2048, ffdhe3072"' ; \
+        fi ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_BCJSSE_SECURITY_CFG) ; \
         printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
@@ -74,8 +83,8 @@ JAVA_SECURITY_PARAMS := $(shell \
     fi ; \
 )
 JAVA_SECURITY_DEPS := $(shell \
-    if [ 1 = "$(TEST_BC)" ] ; then \
-        printf '%s %s %s %s %s ' $(JAVA_BC_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
+    if [ 1 = "$(TEST_BCFIPS)" ] ; then \
+        printf '%s %s %s %s ' $(JAVA_BCFIPS_SECURITY_CFG) $(BC_BCFIPS_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
         printf '%s %s %s %s %s %s ' $(JAVA_BCJSSE_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
@@ -87,8 +96,8 @@ JAVA_SECURITY_DEPS := $(shell \
     fi ; \
 )
 JAVA_CP_APPEND := $(shell \
-    if [ 1 = "$(TEST_BC)" ] ; then \
-        printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
+    if [ 1 = "$(TEST_BCFIPS)" ] ; then \
+        printf ':%s' $(BC_BCFIPS_JAR) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
         printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
     elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
@@ -114,7 +123,7 @@ clean:
 $(JAVA_PKCS11_FIPS_CONF_DIR):
 	mkdir $@
 
-$(JAVA_BC_CONF_DIR):
+$(JAVA_BCFIPS_CONF_DIR):
 	mkdir $@
 
 $(JAVA_BCJSSE_CONF_DIR):
@@ -174,34 +183,34 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 
 $(BC_BCPROV_JAR): | $(BC_JARS_DIRS)
 	curl -L -f -o $(BC_BCPROV_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/$(BC_BCPROV_VERSION)/bcprov-jdk15on-$(BC_BCPROV_VERSION).jar"
-	#cp ~/Downloads/bcprov-ext-jdk15on-168.jar $(BC_BCPROV_JAR)
 
 $(BC_BCTLS_JAR): | $(BC_JARS_DIRS)
 	curl -L -f -o $(BC_BCTLS_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bctls-jdk15on/$(BC_BCTLS_VERSION)/bctls-jdk15on-$(BC_BCTLS_VERSION).jar"
-	#cp ~/Downloads/bctls-jdk15on-168.jar $(BC_BCTLS_JAR)
 
 $(BC_BCPKIX_JAR): | $(BC_JARS_DIRS)
 	curl -L -f -o $(BC_BCPKIX_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/$(BC_BCPKIX_VERSION)/bcpkix-jdk15on-$(BC_BCPKIX_VERSION).jar"
-	#cp ~/Downloads/bcpkix-jdk15on-168.jar $(BC_BCPKIX_JAR)
+
+$(BC_BCFIPS_JAR): | $(BC_JARS_DIRS)
+	curl -L -f -o $(BC_BCFIPS_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/$(BC_BCFIPS_VERSION)/bc-fips-$(BC_BCFIPS_VERSION).jar"
 
 # See: https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
 # this setup seems problematic as BC does not provide "SunTlsMasterSecret":
 # https://github.com/openjdk/jdk/blob/05a764f4ffb8030d6b768f2d362c388e5aabd92d/src/java.base/share/classes/sun/security/ssl/SSLMasterKeyDerivation.java#L105
 # this prevents testing anything else than TLSv1.3
-$(JAVA_BC_SECURITY_CFG): | $(JAVA_BC_CONF_DIR)
+$(JAVA_BCFIPS_SECURITY_CFG): | $(JAVA_BCFIPS_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
 	if cat $@ | grep -q '^fips.provider' ; then \
 		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 			printf '%s\n%s\n%s\n' \
-			"fips.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
-			"fips.provider.2=com.sun.net.ssl.internal.ssl.Provider BC" \
+			"fips.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+			"fips.provider.2=com.sun.net.ssl.internal.ssl.Provider BCFIPS" \
 			"fips.provider.3=sun.security.provider.Sun" \
 			>> $@ ; \
 		else \
 			printf '%s\n%s\n%s\n' \
-			"fips.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
-			"fips.provider.2=SunJSSE BC" \
+			"fips.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+			"fips.provider.2=SunJSSE BCFIPS" \
 			"fips.provider.3=sun.security.provider.Sun" \
 			>> $@ ; \
 		fi ; \
@@ -210,15 +219,15 @@ $(JAVA_BC_SECURITY_CFG): | $(JAVA_BC_CONF_DIR)
 	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
 	if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 		printf '%s\n%s\n%s\n%s\n' \
-		"security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
-		"security.provider.2=com.sun.net.ssl.internal.ssl.Provider BC" \
+		"security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+		"security.provider.2=com.sun.net.ssl.internal.ssl.Provider BCFIPS" \
 		"security.provider.3=sun.security.provider.Sun" \
 		"ssl.KeyManagerFactory.algorithm=PKIX" \
 		>> $@ ; \
 	else \
 		printf '%s\n%s\n%s\n' \
-		"security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
-		"security.provider.2=SunJSSE BC" \
+		"security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+		"security.provider.2=SunJSSE BCFIPS" \
 		"security.provider.3=sun.security.provider.Sun" \
 		>> $@ ; \
 	fi

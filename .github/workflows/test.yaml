@@ -101,8 +101,8 @@ jobs:
       - name: Run
         run: make ssl-tests TEST_BCJSSE=1
 
-  test-jdk8-bc:
-    name: "Test JDK8 BC"
+  test-jdk8-bcfips:
+    name: "Test JDK8 BCFIPS"
     runs-on: "ubuntu-18.04"
     steps:
       - uses: actions/checkout@v2
@@ -111,7 +111,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Run
-        run: make ssl-tests TEST_BC=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
+        run: make ssl-tests TEST_BCFIPS=1
 
   test-jdk8-bc-2nd:
     name: "Test JDK8 BC 2ND"
@@ -217,8 +217,8 @@ jobs:
       - name: Run
         run: make ssl-tests TEST_BCJSSE=1
 
-  test-jdk11-bc:
-    name: "Test JDK11 BC"
+  test-jdk11-bcfips:
+    name: "Test JDK11 BCFIPS"
     runs-on: "ubuntu-18.04"
     steps:
       - uses: actions/checkout@v2
@@ -227,7 +227,7 @@ jobs:
         with:
           java-version: 11
       - name: Run
-        run: make ssl-tests TEST_BC=1  SSLTESTS_IGNORE_PROTOCOLS='TLSv1|TLSv1.1|TLSv1.2'
+        run: make ssl-tests TEST_BCFIPS=1
 
   test-jdk11-bc-2nd:
     name: "Test JDK11 BC 2ND"
