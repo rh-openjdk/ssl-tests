@@ -81,7 +81,7 @@ JAVA_SECURITY_PARAMS := $(shell \
         printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_JKS) ; \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
     fi ; \
-    if [ 1 = "$(USE_URANDOM)" ; then \
+    if [ 1 = "$(USE_URANDOM)" ] ; then \
         printf '%s ' -Djava.security.egd=file:/dev/./urandom ; \
     fi \
 )
