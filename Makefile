@@ -198,19 +198,21 @@ $(BC_BCFIPS_JAR): | $(BC_JARS_DIRS)
 # this setup seems problematic as BC does not provide "SunTlsMasterSecret":
 # https://github.com/openjdk/jdk/blob/05a764f4ffb8030d6b768f2d362c388e5aabd92d/src/java.base/share/classes/sun/security/ssl/SSLMasterKeyDerivation.java#L105
 # this prevents testing anything else than TLSv1.3
+# C:HYBRID;ENABLE{All}; should make BC less entropy hungry, see section 2.3 of guide higer
+
 $(JAVA_BCFIPS_SECURITY_CFG): | $(JAVA_BCFIPS_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
 	if cat $@ | grep -q '^fips.provider' ; then \
 		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 			printf '%s\n%s\n%s\n' \
-			"fips.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+			"fips.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider C:HYBRID;ENABLE{All};" \
 			"fips.provider.2=com.sun.net.ssl.internal.ssl.Provider BCFIPS" \
 			"fips.provider.3=sun.security.provider.Sun" \
 			>> $@ ; \
 		else \
 			printf '%s\n%s\n%s\n' \
-			"fips.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+			"fips.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider C:HYBRID;ENABLE{All};" \
 			"fips.provider.2=SunJSSE BCFIPS" \
 			"fips.provider.3=sun.security.provider.Sun" \
 			>> $@ ; \
@@ -220,14 +222,14 @@ $(JAVA_BCFIPS_SECURITY_CFG): | $(JAVA_BCFIPS_CONF_DIR)
 	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
 	if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 		printf '%s\n%s\n%s\n%s\n' \
-		"security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+		"security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider C:HYBRID;ENABLE{All};" \
 		"security.provider.2=com.sun.net.ssl.internal.ssl.Provider BCFIPS" \
 		"security.provider.3=sun.security.provider.Sun" \
 		"ssl.KeyManagerFactory.algorithm=PKIX" \
 		>> $@ ; \
 	else \
 		printf '%s\n%s\n%s\n' \
-		"security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider" \
+		"security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider C:HYBRID;ENABLE{All};" \
 		"security.provider.2=SunJSSE BCFIPS" \
 		"security.provider.3=sun.security.provider.Sun" \
 		>> $@ ; \
