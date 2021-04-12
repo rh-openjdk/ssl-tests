@@ -81,7 +81,9 @@ JAVA_SECURITY_PARAMS := $(shell \
         printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_JKS) ; \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
     fi ; \
-    printf '%s ' -Djava.security.egd=file:/dev/./urandom ; \
+    if [ 1 = "$(USE_URANDOM)" ; then \
+        printf '%s ' -Djava.security.egd=file:/dev/./urandom ; \
+    fi \
 )
 JAVA_SECURITY_DEPS := $(shell \
     if [ 1 = "$(TEST_BCFIPS)" ] ; then \
