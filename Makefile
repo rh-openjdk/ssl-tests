@@ -198,7 +198,7 @@ $(BC_BCFIPS_JAR): | $(BC_JARS_DIRS)
 	curl -L -f -o $(BC_BCFIPS_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/$(BC_BCFIPS_VERSION)/bc-fips-$(BC_BCFIPS_VERSION).jar"
 
 # See: https://downloads.bouncycastle.org/fips-java/BC-FJA-UserGuide-1.0.2.pdf
-# this setup seems problematic as BC does not provide "SunTlsMasterSecret":
+# this setup requires BCFIPS provider as BC provider does not provide "SunTlsMasterSecret":
 # https://github.com/openjdk/jdk/blob/05a764f4ffb8030d6b768f2d362c388e5aabd92d/src/java.base/share/classes/sun/security/ssl/SSLMasterKeyDerivation.java#L105
 # this prevents testing anything else than TLSv1.3
 # C:HYBRID;ENABLE{All}; should make BC less entropy hungry, see section 2.3 of guide higer
