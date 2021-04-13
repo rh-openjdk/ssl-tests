@@ -98,13 +98,14 @@ JAVA_SECURITY_DEPS := $(shell \
         printf '%s %s ' $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) ; \
     fi ; \
 )
+SEP := $(shell if uname -s | grep -qi cygwin ; then printf ';' ; else printf ':' ; fi )
 JAVA_CP_APPEND := $(shell \
     if [ 1 = "$(TEST_BCFIPS)" ] ; then \
-        printf ':%s' $(BC_BCFIPS_JAR) ; \
+        printf "$(SEP)%s" $(BC_BCFIPS_JAR) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
-        printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
+        printf "$(SEP)%s$(SEP)%s$(SEP)%s" $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
     elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
-        printf ':%s:%s:%s' $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
+        printf "$(SEP)%s$(SEP)%s$(SEP)%s" $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
     fi ; \
 )
 
