@@ -206,20 +206,20 @@ $(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
 
 # create p12 keystore
 $(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
-	$(KEYTOOL_JTO) $(KEYTOOL) -importkeystore \
+	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
 	-srckeystore $(KEYSORE_P12_RSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
-	$(KEYTOOL_JTO) $(KEYTOOL) -importkeystore \
+	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
 	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
 	if [ -z "$(KEYTOOL_JTO)" ] ; then \
-	$(KEYTOOL_JTO) $(KEYTOOL) -importkeystore \
+	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
 	-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
@@ -229,7 +229,7 @@ $(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
 
 # create java keystore
 $(KEYSTORE_JKS): $(KEYSTORE_P12)
-	$(KEYTOOL) -importkeystore \
+	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
 	-srckeystore $(KEYSTORE_P12) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_JKS) -deststoretype JKS \
@@ -238,12 +238,12 @@ $(KEYSTORE_JKS): $(KEYSTORE_P12)
 
 # create truststore with root CA cert
 $(TRUSTSTORE_P12): $(ROOT_CRT)
-	$(KEYTOOL_JTO) $(KEYTOOL) -import -file $(ROOT_CRT) -alias rootca \
+	$(KEYTOOL) $(KEYTOOL_PARAMS) -import -file $(ROOT_CRT) -alias rootca \
 	-keystore $(TRUSTSTORE_P12) -storetype PKCS12 -storepass $(TRUSTSTORE_PASSWORD) -noprompt
 
 # create truststore with root CA cert
 $(TRUSTSTORE_JKS): $(ROOT_CRT)
-	$(KEYTOOL) -import -file $(ROOT_CRT) -alias rootca \
+	$(KEYTOOL) $(KEYTOOL_PARAMS) -import -file $(ROOT_CRT) -alias rootca \
 	-keystore $(TRUSTSTORE_JKS) -storepass $(TRUSTSTORE_PASSWORD) -noprompt
 
 # create nss db with keys and certs
