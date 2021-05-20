@@ -155,6 +155,7 @@ $(JAVA_PKCS11_FIPS_NSS_CFG): | $(JAVA_PKCS11_FIPS_CONF_DIR)
 
 $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FIPS_CONF_DIR) $(NSSDB_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
+	printf '\n' >> $@ ;
 	if cat $@ | grep -q '^fips.provider' ; then \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 			sed -i 's;^fips.provider.1=sun.security.pkcs11.SunPKCS11.*$$;fips.provider.1=sun.security.pkcs11.SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ; \
@@ -205,6 +206,7 @@ $(BC_BCFIPS_JAR): | $(BC_JARS_DIRS)
 
 $(JAVA_BCFIPS_SECURITY_CFG): | $(JAVA_BCFIPS_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
+	printf '\n' >> $@ ;
 	if cat $@ | grep -q '^fips.provider' ; then \
 		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
@@ -241,6 +243,7 @@ $(JAVA_BCFIPS_SECURITY_CFG): | $(JAVA_BCFIPS_CONF_DIR)
 # See: https://downloads.bouncycastle.org/fips-java/BC-FJA-(D)TLSUserGuide-1.0.9.pdf
 $(JAVA_BCJSSE_SECURITY_CFG): | $(JAVA_BCJSSE_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
+	printf '\n' >> $@ ;
 	if cat $@ | grep -q '^fips.provider' ; then \
 		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
 		printf '%s\n%s\n%s\n' \
@@ -267,6 +270,7 @@ $(JAVA_BCJSSE_SECURITY_CFG): | $(JAVA_BCJSSE_CONF_DIR)
 # https://bugs.openjdk.java.net/browse/JDK-8256252
 $(JAVA_BC_2ND_SECURITY_CFG): | $(JAVA_BC_2ND_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
+	printf '\n' >> $@ ;
 	i=2 ; \
 	while cat $@ | grep -q "^security.provider.$${i}[[:space:]]*=" ; do \
 		i=$$(( i + 1 )) ; \
