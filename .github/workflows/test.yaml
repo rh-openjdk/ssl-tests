@@ -131,7 +131,9 @@ jobs:
           distribution: 'adopt'
           java-version: 8
       - name: Run
-        run: make ssl-tests TEST_BC_2ND=1
+        # Legacy algorithms used for keystore as workaround to BC issue:
+        # https://github.com/bcgit/bc-java/issues/958
+        run: make ssl-tests TEST_BC_2ND=1 KEYSTORE_PKCS12_LEGACY=1
 
   test-jdk11:
     name: "Test JDK11"
@@ -260,7 +262,9 @@ jobs:
           # causing these ciphers to randomly fail, see:
           # https://github.com/bcgit/bc-java/issues/862
           # It should be fixed in BC 1.69, then this workaround can be removed
-          make ssl-tests TEST_BC_2ND=1 SSLTESTS_IGNORE_CIPHERS=TLS_ECDHE.*
+          # Legacy algorithms used for keystore as workaround to BC issue:
+          # https://github.com/bcgit/bc-java/issues/958
+          make ssl-tests TEST_BC_2ND=1 SSLTESTS_IGNORE_CIPHERS=TLS_ECDHE.* KEYSTORE_PKCS12_LEGACY=1
 
   test-jdk14:
     name: "Test JDK14"
