@@ -253,7 +253,7 @@ $(NSSDB_DIR): $(ROOT_CRT) $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA
 	certutil -A -n rootca -i $(ROOT_CRT) -t C,, -d $(NSSDB_DIR) -f $(NSSDB_DIR)/password.txt
 	pk12util -i $(KEYSORE_P12_RSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
 	pk12util -i $(KEYSORE_P12_EC) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
-	pk12util -i $(KEYSORE_P12_DSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
+	# pk12util -i $(KEYSORE_P12_DSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
 	if [ 1 = $(NSSDB_FIPS) ] ; then \
 		printf '\n' | modutil -fips true -dbdir $(NSSDB_DIR) ; \
 	fi
