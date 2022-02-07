@@ -70,7 +70,7 @@ JAVA_SECURITY_PARAMS := $(shell \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
-        if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' ; then \
+        if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' && [ 1 = $(FIPS_MODE_ENABLED) ] ; then \
             printf '%s ' '-Dcom.redhat.fips=true' ; \
         else \
             printf '%s ' '-Djavax.net.ssl.keyStore=NONE' ; \
@@ -156,7 +156,7 @@ $(JAVA_PKCS11_FIPS_NSS_CFG): | $(JAVA_PKCS11_FIPS_CONF_DIR)
 $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FIPS_CONF_DIR) $(NSSDB_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
 	printf '\n' >> $@ ;
-	if cat $@ | grep -q '^fips.provider' ; then \
+	if cat $@ | grep -q '^fips.provider' && [ 1 = $(FIPS_MODE_ENABLED) ] ; then \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 			sed -i 's;^fips.provider.1=sun.security.pkcs11.SunPKCS11.*$$;fips.provider.1=sun.security.pkcs11.SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ; \
 		else \
