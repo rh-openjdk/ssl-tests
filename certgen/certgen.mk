@@ -245,7 +245,7 @@ $(TRUSTSTORE_JKS): $(ROOT_CRT)
 	-keystore $(TRUSTSTORE_JKS) -storepass $(TRUSTSTORE_PASSWORD) -noprompt
 
 # create nss db with keys and certs
-$(NSSDB_DIR): $(ROOT_CRT) $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
+$(NSSDB_DIR): $(ROOT_CRT) $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) # $(KEYSORE_P12_DSA)
 	mkdir $(NSSDB_DIR)
 	echo "$(NSSDB_PASSWORD)" > $(NSSDB_DIR)/password.txt
 	certutil -N -d $(NSSDB_DIR) -f $(NSSDB_DIR)/password.txt
