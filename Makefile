@@ -92,7 +92,7 @@ JAVA_SECURITY_DEPS := $(shell \
     if [ 1 = "$(TEST_BCFIPS)" ] ; then \
         printf '%s %s %s %s ' $(JAVA_BCFIPS_SECURITY_CFG) $(BC_BCFIPS_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
-        printf '%s %s %s %s %s %s ' $(JAVA_BCJSSE_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
+        printf '%s %s %s %s %s %s %s ' $(JAVA_BCJSSE_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
         printf '%s %s %s %s %s %s %s ' $(JAVA_BC_2ND_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
