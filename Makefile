@@ -17,15 +17,18 @@ JAVA_PKCS11_FIPS_NSS_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/nss.fips.cfg
 JAVA_PKCS11_FIPS_SECURITY_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/java.security
 
 BC_JARS_DIRS = build/bc-jars
-BC_VERSION = 1.68
+BC_VERSION = 1.70
+BC_VARIANT = jdk15on
 BC_BCPROV_VERSION = $(BC_VERSION)
 BC_BCTLS_VERSION = $(BC_VERSION)
 BC_BCPKIX_VERSION = $(BC_VERSION)
-BC_BCPROV_JAR = $(BC_JARS_DIRS)/bcprov-jdk15on-$(BC_BCPROV_VERSION).jar
-BC_BCTLS_JAR = $(BC_JARS_DIRS)/bctls-jdk15on-$(BC_BCTLS_VERSION).jar
-BC_BCPKIX_JAR = $(BC_JARS_DIRS)/bcpkix-jdk15on-$(BC_BCPKIX_VERSION).jar
+BC_BCUTIL_VERSION = $(BC_VERSION)
+BC_BCPROV_JAR = $(BC_JARS_DIRS)/bcprov-$(BC_VARIANT)-$(BC_BCPROV_VERSION).jar
+BC_BCTLS_JAR = $(BC_JARS_DIRS)/bctls-$(BC_VARIANT)-$(BC_BCTLS_VERSION).jar
+BC_BCPKIX_JAR = $(BC_JARS_DIRS)/bcpkix-$(BC_VARIANT)-$(BC_BCPKIX_VERSION).jar
+BC_BCUTIL_JAR = $(BC_JARS_DIRS)/bcutil-$(BC_VARIANT)-$(BC_BCUTIL_VERSION).jar
 
-BC_BCFIPS_VERSION = 1.0.2
+BC_BCFIPS_VERSION = 1.0.2.3
 BC_BCFIPS_JAR = $(BC_JARS_DIRS)/bc-fips-$(BC_BCFIPS_VERSION).jar
 
 JAVA_BCFIPS_CONF_DIR = build/java-bcfips-conf
@@ -89,9 +92,9 @@ JAVA_SECURITY_DEPS := $(shell \
     if [ 1 = "$(TEST_BCFIPS)" ] ; then \
         printf '%s %s %s %s ' $(JAVA_BCFIPS_SECURITY_CFG) $(BC_BCFIPS_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
-        printf '%s %s %s %s %s %s ' $(JAVA_BCJSSE_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
+        printf '%s %s %s %s %s %s ' $(JAVA_BCJSSE_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
-        printf '%s %s %s %s %s %s ' $(JAVA_BC_2ND_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
+        printf '%s %s %s %s %s %s %s ' $(JAVA_BC_2ND_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' $(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
     else \
@@ -103,9 +106,9 @@ JAVA_CP_APPEND := $(shell \
     if [ 1 = "$(TEST_BCFIPS)" ] ; then \
         printf "$(SEP)%s" $(BC_BCFIPS_JAR) ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
-        printf "$(SEP)%s$(SEP)%s$(SEP)%s" $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
+        printf "$(SEP)%s$(SEP)%s$(SEP)%s$(SEP)%s" $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) ; \
     elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
-        printf "$(SEP)%s$(SEP)%s$(SEP)%s" $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) ; \
+        printf "$(SEP)%s$(SEP)%s$(SEP)%s$(SEP)%s" $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) ; \
     fi ; \
 )
 
@@ -187,13 +190,16 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 
 
 $(BC_BCPROV_JAR): | $(BC_JARS_DIRS)
-	curl -L -f -o $(BC_BCPROV_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/$(BC_BCPROV_VERSION)/bcprov-jdk15on-$(BC_BCPROV_VERSION).jar"
+	curl -L -f -o $(BC_BCPROV_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcprov-$(BC_VARIANT)/$(BC_BCPROV_VERSION)/bcprov-$(BC_VARIANT)-$(BC_BCPROV_VERSION).jar"
 
 $(BC_BCTLS_JAR): | $(BC_JARS_DIRS)
-	curl -L -f -o $(BC_BCTLS_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bctls-jdk15on/$(BC_BCTLS_VERSION)/bctls-jdk15on-$(BC_BCTLS_VERSION).jar"
+	curl -L -f -o $(BC_BCTLS_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bctls-$(BC_VARIANT)/$(BC_BCTLS_VERSION)/bctls-$(BC_VARIANT)-$(BC_BCTLS_VERSION).jar"
 
 $(BC_BCPKIX_JAR): | $(BC_JARS_DIRS)
-	curl -L -f -o $(BC_BCPKIX_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-jdk15on/$(BC_BCPKIX_VERSION)/bcpkix-jdk15on-$(BC_BCPKIX_VERSION).jar"
+	curl -L -f -o $(BC_BCPKIX_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-$(BC_VARIANT)/$(BC_BCPKIX_VERSION)/bcpkix-$(BC_VARIANT)-$(BC_BCPKIX_VERSION).jar"
+
+$(BC_BCUTIL_JAR): | $(BC_JARS_DIRS)
+	curl -L -f -o $(BC_BCUTIL_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bcutil-$(BC_VARIANT)/$(BC_BCUTIL_VERSION)/bcutil-$(BC_VARIANT)-$(BC_BCUTIL_VERSION).jar"
 
 $(BC_BCFIPS_JAR): | $(BC_JARS_DIRS)
 	curl -L -f -o $(BC_BCFIPS_JAR) "https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/$(BC_BCFIPS_VERSION)/bc-fips-$(BC_BCFIPS_VERSION).jar"
