@@ -267,7 +267,7 @@ jobs:
           make ssl-tests TEST_BC_2ND=1 SSLTESTS_IGNORE_CIPHERS=TLS_ECDHE.* KEYSTORE_PKCS12_LEGACY=1
 
   test-jdk14:
-    name: "Test JDK14"
+    name: "Test JDK17"
     runs-on: "ubuntu-18.04"
     steps:
       - uses: actions/checkout@v2
@@ -275,6 +275,6 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: 14
+          java-version: 17
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
