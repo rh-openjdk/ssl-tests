@@ -15,9 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
@@ -30,9 +30,9 @@ jobs:
         run: sudo apt-get install libnss3 libnss3-tools
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         run: |
@@ -49,9 +49,9 @@ jobs:
           sudo apt-get install openssl
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         run: make ssl-tests SSLTESTS_USE_OPENSSL_CLIENT=1
@@ -65,9 +65,9 @@ jobs:
           sudo apt-get install gnutls-bin
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1
@@ -87,9 +87,9 @@ jobs:
           fi
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         run: make ssl-tests SSLTESTS_USE_NSS_CLIENT=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
@@ -100,9 +100,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         run: make ssl-tests TEST_BCJSSE=1
@@ -113,9 +113,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         run: make ssl-tests TEST_BCFIPS=1
@@ -126,9 +126,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 8
       - name: Run
         # Legacy algorithms used for keystore as workaround to BC issue:
@@ -141,9 +141,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
@@ -156,9 +156,9 @@ jobs:
         run: sudo apt-get install libnss3 libnss3-tools
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: |
@@ -175,9 +175,9 @@ jobs:
           sudo apt-get install openssl
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: make ssl-tests SSLTESTS_USE_OPENSSL_CLIENT=1
@@ -191,9 +191,9 @@ jobs:
           sudo apt-get install gnutls-bin
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1
@@ -213,9 +213,9 @@ jobs:
           fi
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: make ssl-tests SSLTESTS_USE_NSS_CLIENT=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
@@ -226,9 +226,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: make ssl-tests TEST_BCJSSE=1
@@ -239,9 +239,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: make ssl-tests TEST_BCFIPS=1
@@ -252,9 +252,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 11
       - name: Run
         run: |
@@ -262,15 +262,15 @@ jobs:
           # https://github.com/bcgit/bc-java/issues/958
           make ssl-tests TEST_BC_2ND=1 KEYSTORE_PKCS12_LEGACY=1
 
-  test-jdk14:
+  test-jdk17:
     name: "Test JDK17"
     runs-on: "ubuntu-18.04"
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: 17
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
