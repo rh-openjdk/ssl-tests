@@ -205,7 +205,8 @@ $(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
 	-passout pass:$(KEYSTORE_PASSWORD)
 
 # create p12 keystore
-$(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
+KEYSTORE_P12_DSA_DEP := $(shell if ! [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then printf '%s' "$(KEYSORE_P12_DSA)" ; fi )
+$(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSTORE_P12_DSA_DEP)
 	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
 	-srckeystore $(KEYSORE_P12_RSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
@@ -218,12 +219,14 @@ $(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSORE_P12_DSA)
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
-	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
-	-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
-	-srcstorepass $(KEYSTORE_PASSWORD) \
-	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
-	-deststorepass $(KEYSTORE_PASSWORD) \
-	-noprompt -v
+	if ! [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
+		$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
+		-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
+		-srcstorepass $(KEYSTORE_PASSWORD) \
+		-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
+		-deststorepass $(KEYSTORE_PASSWORD) \
+		-noprompt -v ; \
+	fi
 
 # create java keystore
 $(KEYSTORE_JKS): $(KEYSTORE_P12)

@@ -78,6 +78,12 @@ JAVA_SECURITY_PARAMS := $(shell \
         else \
             printf '%s ' '-Djavax.net.ssl.keyStore=NONE' ; \
         fi ; \
+        if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.keystore.type=pkcs12' ; then \
+            printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_JKS) ; \
+            printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
+            printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_JKS) ; \
+            printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+        fi ; \
     else \
         printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_JKS) ; \
         printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
@@ -97,6 +103,9 @@ JAVA_SECURITY_DEPS := $(shell \
         printf '%s %s %s %s %s %s %s ' $(JAVA_BC_2ND_SECURITY_CFG) $(BC_BCPROV_JAR) $(BC_BCTLS_JAR) $(BC_BCPKIX_JAR) $(BC_BCUTIL_JAR) $(KEYSTORE_P12) $(TRUSTSTORE_P12) ; \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' $(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
+        if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.keystore.type=pkcs12' ; then \
+            printf '%s %s ' $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) ; \
+        fi ; \
     else \
         printf '%s %s ' $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) ; \
     fi ; \
@@ -166,7 +175,8 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 		else \
 			sed -i 's;^fips.provider.1=SunPKCS11.*$$;fips.provider.1=SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ;	\
 		fi ; \
-		if ! [ 0 = "$(SET_RPMS_KEYSTORE_TYPE)" ] ; then \
+		if ! [ 0 = "$(SET_RPMS_KEYSTORE_TYPE)" ] \
+		&& cat $@ 2>&1 | grep -q '^fips.keystore.type=PKCS11' ; then \
 			sed -i "s;^keystore.type=.*$$;keystore.type=PKCS11;g" $@ ; \
 		fi \
 	else \
