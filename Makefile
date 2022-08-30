@@ -147,12 +147,13 @@ $(JAVA_PKCS11_FIPS_NSS_CFG): | $(JAVA_PKCS11_FIPS_CONF_DIR)
 		cp $(JAVA_CONF_DIR)/security/nss.fips.cfg $@ ; \
 	    sed -i 's;^nssSecmodDirectory[[:space:]]*=.*$$;nssSecmodDirectory = $(NSSDB_DIR);g' $@ ; \
 	else \
-		printf '%s\n%s\n%s\n%s\n%s\n' \
+		printf '%s\n%s\n%s\n%s\n%s\n%s\n' \
 		"name = NSS-FIPS" \
 		"nssLibraryDirectory = /usr/lib64" \
 		"nssSecmodDirectory = $(NSSDB_DIR)" \
 		"nssDbMode = readOnly" \
 		"nssModule = fips" \
+		"attributes(*,CKO_SECRET_KEY,CKK_GENERIC_SECRET)={ CKA_SIGN=true }" \
 		>> $@ ; \
 	fi
 
