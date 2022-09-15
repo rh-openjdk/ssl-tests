@@ -79,7 +79,7 @@ JAVA_SECURITY_PARAMS := $(shell \
             printf '%s ' '-Djavax.net.ssl.keyStore=NONE' ; \
         fi ; \
         if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.keystore.type=pkcs12' ; then \
-            printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_JKS) ; \
+            printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
             printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
             printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_JKS) ; \
             printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
@@ -104,7 +104,7 @@ JAVA_SECURITY_DEPS := $(shell \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' $(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
         if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.keystore.type=pkcs12' ; then \
-            printf '%s %s ' $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) ; \
+            printf '%s %s ' $(KEYSTORE_P12) $(TRUSTSTORE_JKS) ; \
         fi ; \
     else \
         printf '%s %s ' $(KEYSTORE_JKS) $(TRUSTSTORE_JKS) ; \
