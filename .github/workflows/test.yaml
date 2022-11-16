@@ -27,7 +27,9 @@ jobs:
     runs-on: "ubuntu-18.04"
     steps:
       - name: "Install nss"
-        run: sudo apt-get install libnss3 libnss3-tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install libnss3 libnss3-tools
       - uses: actions/checkout@v2
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -46,6 +48,7 @@ jobs:
     steps:
       - name: "Install openssl"
         run: |
+          sudo apt-get update
           sudo apt-get install openssl
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -62,6 +65,7 @@ jobs:
     steps:
       - name: "Install gnutls"
         run: |
+          sudo apt-get update
           sudo apt-get install gnutls-bin
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -78,6 +82,7 @@ jobs:
     steps:
       - name: "Install nss"
         run: |
+          sudo apt-get update
           sudo apt-get install libnss3-tools libnss3-dev gcc pkg-config
           if ! type listsuites ; then
               curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f20d37f/cmd/listsuites/listsuites.c
@@ -153,7 +158,9 @@ jobs:
     runs-on: "ubuntu-18.04"
     steps:
       - name: "Install nss"
-        run: sudo apt-get install libnss3 libnss3-tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install libnss3 libnss3-tools
       - uses: actions/checkout@v2
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -172,6 +179,7 @@ jobs:
     steps:
       - name: "Install openssl"
         run: |
+          sudo apt-get update
           sudo apt-get install openssl
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -188,6 +196,7 @@ jobs:
     steps:
       - name: "Install gnutls"
         run: |
+          sudo apt-get update
           sudo apt-get install gnutls-bin
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -204,6 +213,7 @@ jobs:
     steps:
       - name: "Install nss"
         run: |
+          sudo apt-get update
           sudo apt-get install libnss3-tools libnss3-dev gcc pkg-config
           if ! type listsuites ; then
               curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f20d37f/cmd/listsuites/listsuites.c
