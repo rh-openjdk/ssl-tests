@@ -258,3 +258,29 @@ jobs:
           install: make
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
+  test-macos:
+    name: "MacOS"
+    runs-on: "macos-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        jdkconf:
+          - JDK 8
+          - JDK 11
+          - JDK 17
+        include:
+          - jdkconf: JDK 8
+            jdkver: "8"
+          - jdkconf: JDK 11
+            jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.jdkver }}
+      - name: Run
+        run: make SSLContextInfo SSLSocketInfo ssl-tests
