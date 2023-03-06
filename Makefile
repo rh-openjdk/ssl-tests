@@ -13,13 +13,13 @@ NSSDB_FIPS := $(shell if [ 0 = $(FIPS_MODE_ENABLED) ] && [ 1 = $(TEST_PKCS11_FIP
 NSS_LIBDIR = $(shell \
   if [ -e '/usr/lib64' ] ; then \
     if [ -e /usr/lib64/libnss3.so ] ; then \
-        printf '%s' "/usr/lib64/libnss3.so" ; \
+        printf '%s' "/usr/lib64" ; \
     else \
         dirname /usr/lib/*linux*/libnss3.so | head -n 1 ; \
     fi \
   else \
     if [ -e /usr/lib/libnss3.so ] ; then \
-        printf '%s' "/usr/lib/libnss3.so" ; \
+        printf '%s' "/usr/lib" ; \
     else \
         dirname /usr/lib/*linux*/libnss3.so | head -n 1 ; \
     fi \
