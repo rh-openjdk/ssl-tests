@@ -10,6 +10,21 @@ JAVA_CONF_DIR := $(shell if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then printf '%s' "
 FIPS_MODE_ENABLED := $(shell if [ -e "/proc/sys/crypto/fips_enabled" ] && [ 1 = $$(cat /proc/sys/crypto/fips_enabled) ] ; then echo 1 ; else echo 0 ; fi )
 TEST_PKCS11_FIPS ?= $(shell if [ 1 = $(FIPS_MODE_ENABLED) ] && [ -n "$(JAVA_HOME_DIR)" ] && cat $(JAVA_CONF_DIR)/security/java.security 2>&1 | grep -q '^fips.provider' ; then echo 1; else echo 0 ; fi )
 NSSDB_FIPS := $(shell if [ 0 = $(FIPS_MODE_ENABLED) ] && [ 1 = $(TEST_PKCS11_FIPS) ] ; then echo 1 ; else echo 0 ; fi )
+NSS_LIBDIR = $(shell \
+  if [ -e '/usr/lib64' ] ; then \
+    if [ -e /usr/lib64/libnss3.so ] ; then \
+        printf '%s' "/usr/lib64/libnss3.so" ; \
+    else \
+        dirname /usr/lib/*linux*/libnss3.so | head -n 1 ; \
+    fi \
+  else \
+    if [ -e /usr/lib/libnss3.so ] ; then \
+        printf '%s' "/usr/lib/libnss3.so" ; \
+    else \
+        dirname /usr/lib/*linux*/libnss3.so | head -n 1 ; \
+    fi \
+  fi \
+)
 KEYTOOL_PARAMS := $(shell printf '%s ' '-J-Dcom.redhat.fips=false' ; if [ 1 = "$(KEYSTORE_PKCS12_LEGACY)" ] ; then printf '%s ' '-J-Dkeystore.pkcs12.legacy' ; fi )
 
 JAVA_PKCS11_FIPS_CONF_DIR = build/java-pkcs11-conf
@@ -158,7 +173,7 @@ $(JAVA_PKCS11_FIPS_NSS_CFG): | $(JAVA_PKCS11_FIPS_CONF_DIR)
 	else \
 		printf '%s\n%s\n%s\n%s\n%s\n%s\n' \
 		"name = NSS-FIPS" \
-		"nssLibraryDirectory = /usr/lib64" \
+		"nssLibraryDirectory = $(NSS_LIBDIR)" \
 		"nssSecmodDirectory = $(NSSDB_DIR)" \
 		"nssDbMode = readOnly" \
 		"nssModule = fips" \
