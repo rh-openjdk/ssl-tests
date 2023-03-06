@@ -228,3 +228,33 @@ jobs:
         # Legacy algorithms used for keystore as workaround to BC issue:
         # https://github.com/bcgit/bc-java/issues/958
         run: make ssl-tests TEST_BC_2ND=1 KEYSTORE_PKCS12_LEGACY=1
+  test-windows:
+    name: "Windows"
+    runs-on: "windows-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        jdkconf:
+          - JDK 8
+          - JDK 11
+          - JDK 17
+        include:
+          - jdkconf: JDK 8
+            jdkver: "8"
+          - jdkconf: JDK 11
+            jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.jdkver }}
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: make
+      - name: Run
+        run: make SSLContextInfo SSLSocketInfo ssl-tests
