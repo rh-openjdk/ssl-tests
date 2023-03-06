@@ -11,7 +11,7 @@ on:
 jobs:
   test-linux:
     name: "Linux"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +38,7 @@ jobs:
 
   test-linux-pkcs11-nss-fips:
     name: "Linux SunPKCS11-NSS-FIPS"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
@@ -67,7 +67,7 @@ jobs:
 
   test-linux-openssl-client:
     name: "Linux openssl client"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
@@ -95,7 +95,7 @@ jobs:
 
   test-linux-gnutls-client:
     name: "Linux gnutls client"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
@@ -119,11 +119,11 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.jdkver }}
       - name: Run
-        run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1
+        run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1 SSLTESTS_SERVER_SHUTDOWN_OUTPUT=1
 
   test-linux-nss-client:
     name: "Linux nss client"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
@@ -157,7 +157,7 @@ jobs:
 
   test-linux-bcjsse:
     name: "Linux BCJSSE"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
@@ -181,7 +181,7 @@ jobs:
 
   test-linux-bcfips:
     name: "Linux BCFIPS"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
@@ -205,7 +205,7 @@ jobs:
 
   test-linux-bc-2nd:
     name: "Linux BC 2ND"
-    runs-on: "ubuntu-18.04"
+    runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
       matrix:
