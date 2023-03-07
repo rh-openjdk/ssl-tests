@@ -302,3 +302,44 @@ jobs:
           java-version: ${{ matrix.jdkver }}
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
+  test-linux-jtreg:
+    name: "Linux Jtreg"
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        jdkconf:
+          - JDK 8
+          - JDK 11
+          - JDK 17
+        include:
+          - jdkconf: JDK 8
+            jdkver: "8"
+          - jdkconf: JDK 11
+            jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install dependencies"
+        run: |
+          sudo apt-get update
+          sudo apt-get install openssl gnutls-bin libnss3 libnss3-tools libnss3-dev gcc pkg-config
+          if ! type listsuites ; then
+              curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f20d37f/cmd/listsuites/listsuites.c
+              gcc $( pkg-config --cflags nss ) -o listsuites listsuites.c  $( pkg-config --libs nss )
+              sudo cp -a listsuites /usr/bin/
+              rm -f listsuites listsuites.c
+          fi
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.jdkver }}
+      - name: Download jtreg
+        run: |
+          wget https://ci.adoptopenjdk.net/view/Dependencies/job/dependency_pipeline/lastSuccessfulBuild/artifact/jtreg/jtreg5.1-b01.tar.gz
+          tar -xf jtreg5.1-b01.tar.gz
+      - name: Run
+        run: |
+          jtreg/bin/jtreg -jdk:$JAVA_HOME -v:fail,error,summary -retain:fail,error -ignore:quiet -xml -conc:2 jtreg-wrappers

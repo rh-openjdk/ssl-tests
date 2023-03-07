@@ -28,11 +28,13 @@ NSS_LIBDIR = $(shell \
 )
 KEYTOOL_PARAMS := $(shell printf '%s ' '-J-Dcom.redhat.fips=false' ; if [ 1 = "$(KEYSTORE_PKCS12_LEGACY)" ] ; then printf '%s ' '-J-Dkeystore.pkcs12.legacy' ; fi )
 
-JAVA_PKCS11_FIPS_CONF_DIR = build/java-pkcs11-conf
+BUILD_DIR = build
+
+JAVA_PKCS11_FIPS_CONF_DIR = $(BUILD_DIR)/java-pkcs11-conf
 JAVA_PKCS11_FIPS_NSS_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/nss.fips.cfg
 JAVA_PKCS11_FIPS_SECURITY_CFG = $(JAVA_PKCS11_FIPS_CONF_DIR)/java.security
 
-BC_JARS_DIRS = build/bc-jars
+BC_JARS_DIRS = $(BUILD_DIR)/bc-jars
 BC_VERSION = 1.70
 BC_VARIANT = jdk15on
 BC_BCPROV_VERSION = $(BC_VERSION)
@@ -47,19 +49,19 @@ BC_BCUTIL_JAR = $(BC_JARS_DIRS)/bcutil-$(BC_VARIANT)-$(BC_BCUTIL_VERSION).jar
 BC_BCFIPS_VERSION = 1.0.2.3
 BC_BCFIPS_JAR = $(BC_JARS_DIRS)/bc-fips-$(BC_BCFIPS_VERSION).jar
 
-JAVA_BCFIPS_CONF_DIR = build/java-bcfips-conf
+JAVA_BCFIPS_CONF_DIR = $(BUILD_DIR)/java-bcfips-conf
 JAVA_BCFIPS_SECURITY_CFG = $(JAVA_BCFIPS_CONF_DIR)/java.security
 
-JAVA_BCJSSE_CONF_DIR = build/java-bcjsse-conf
+JAVA_BCJSSE_CONF_DIR = $(BUILD_DIR)/java-bcjsse-conf
 JAVA_BCJSSE_SECURITY_CFG = $(JAVA_BCJSSE_CONF_DIR)/java.security
 
-JAVA_BC_2ND_CONF_DIR = build/java-bc-2nd-conf
+JAVA_BC_2ND_CONF_DIR = $(BUILD_DIR)/java-bc-2nd-conf
 JAVA_BC_2ND_SECURITY_CFG = $(JAVA_BC_2ND_CONF_DIR)/java.security
 
 all: ssl-tests
 
 CERTGEN_DIR = certgen
-CERTGEN_BUILD_DIR = build/certgen
+CERTGEN_BUILD_DIR = $(BUILD_DIR)/certgen
 include $(CERTGEN_DIR)/certgen.mk
 
 # BCFIPS needs workaround for jdk>=13:
@@ -141,15 +143,15 @@ JAVA_CP_APPEND := $(shell \
 )
 
 SSLCONTEXTINFO_DIR = SSLContextInfo
-SSLCONTEXTINFO_CLASSES_DIR = build/SSLContextInfo
+SSLCONTEXTINFO_CLASSES_DIR = $(BUILD_DIR)/SSLContextInfo
 include $(SSLCONTEXTINFO_DIR)/SSLContextInfo.mk
 
 SSLSOCKETINFO_DIR = SSLSocketInfo
-SSLSOCKETINFO_CLASSES_DIR = build/SSLSocketInfo
+SSLSOCKETINFO_CLASSES_DIR = $(BUILD_DIR)/SSLSocketInfo
 include $(SSLSOCKETINFO_DIR)/SSLSocketInfo.mk
 
 SSLTESTS_DIR = ssl-tests
-SSLTESTS_CLASSES_DIR = build/ssl-tests
+SSLTESTS_CLASSES_DIR = $(BUILD_DIR)/ssl-tests
 include $(SSLTESTS_DIR)/ssl-tests.mk
 
 clean:
