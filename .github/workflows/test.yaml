@@ -45,11 +45,14 @@ jobs:
         jdkconf:
           - JDK 8
           - JDK 11
+          - JDK 17
         include:
           - jdkconf: JDK 8
             jdkver: "8"
           - jdkconf: JDK 11
             jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
     steps:
       - name: "Install nss"
         run: |
@@ -74,11 +77,14 @@ jobs:
         jdkconf:
           - JDK 8
           - JDK 11
+          - JDK 17
         include:
           - jdkconf: JDK 8
             jdkver: "8"
           - jdkconf: JDK 11
             jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
     steps:
       - name: "Install openssl"
         run: |
@@ -102,11 +108,14 @@ jobs:
         jdkconf:
           - JDK 8
           - JDK 11
+          - JDK 17
         include:
           - jdkconf: JDK 8
             jdkver: "8"
           - jdkconf: JDK 11
             jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
     steps:
       - name: "Install gnutls"
         run: |
@@ -130,11 +139,14 @@ jobs:
         jdkconf:
           - JDK 8
           - JDK 11
+          - JDK 17
         include:
           - jdkconf: JDK 8
             jdkver: "8"
           - jdkconf: JDK 11
             jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
     steps:
       - name: "Install nss"
         run: |
@@ -164,11 +176,14 @@ jobs:
         jdkconf:
           - JDK 8
           - JDK 11
+          - JDK 17
         include:
           - jdkconf: JDK 8
             jdkver: "8"
           - jdkconf: JDK 11
             jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -212,11 +227,14 @@ jobs:
         jdkconf:
           - JDK 8
           - JDK 11
+          - JDK 17
         include:
           - jdkconf: JDK 8
             jdkver: "8"
           - jdkconf: JDK 11
             jdkver: "11"
+          - jdkconf: JDK 17
+            jdkver: "17"
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
