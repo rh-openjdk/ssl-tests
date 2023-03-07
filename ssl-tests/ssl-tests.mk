@@ -1,5 +1,25 @@
 SSLTESTS_SRC_DIR = $(SSLTESTS_DIR)/src
 SSLTESTS_MAIN_CLASS = Main
+
+SSLTESTS_IGNORE_PROTOCOLS ?= $(shell \
+    if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
+        if ! [ 1 = "$(JAVA_CONF_FIPS)" ] || ! [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
+            printf '%s' 'TLSv1|TLSv1.1|TLSv1.3' ; \
+        fi ; \
+    fi ; \
+)
+SSLTESTS_IGNORE_CIPHERS ?= $(shell \
+    if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
+        if ! [ 1 = "$(JAVA_CONF_FIPS)" ] || ! [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
+            if [ "$(JAVA_VERSION_MAJOR)" -ge 16 ] ; then \
+                printf '%s' 'SSL_.*|TLS_DHE_DSS_.*|TLS_ECDHE_.*' ; \
+            else \
+                printf '%s' 'SSL_.*|TLS_DHE_DSS_.*' ; \
+            fi ; \
+        fi ; \
+    fi ; \
+)
+
 SSLTESTS_ONLY_SSL_DEFAULTS_PARAM := $(shell if [ 1 = "$(SSLTESTS_ONLY_SSL_DEFAULTS)" ] ; then  printf '%s' '-Dssltests.onlyssldefaults=1' ; fi )
 SSLTESTS_SSL_CONFIG_FILTER_PARAM := $(shell if [ -n "$(SSLTESTS_SSL_CONFIG_FILTER)" ] ; then  printf '%s='%s'' '-Dssltests.sslconfigFilter' '$(SSLTESTS_SSL_CONFIG_FILTER)' ; fi )
 SSLTESTS_IGNORE_PROTOCOLS_PARAM := $(shell if [ -n "$(SSLTESTS_IGNORE_PROTOCOLS)" ] ; then  printf "%s='%s'" '-Dssltests.ignoredProtocolsPattern' '$(SSLTESTS_IGNORE_PROTOCOLS)' ; fi )

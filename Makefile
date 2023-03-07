@@ -6,9 +6,10 @@ OPENSSL = openssl
 JAVA_VERSION_MAJOR := $(shell $(JAVA) -version 2>&1 | grep version | head -n 1 | sed -E 's/^.*"(1[.])?([0-9]+).*$$/\2/g' )
 JAVA_HOME_DIR  := $(shell if [ -n "$(JAVA_HOME)" ] ; then printf '%s' "$(JAVA_HOME)" ; else readlink -f $$( which $(JAVA) 2>/dev/null || type $(JAVA) | sed 's;.* ;;g' ) | sed 's;/bin/java$$;;g' | sed 's;/jre$$;;g' ; fi )
 JAVA_CONF_DIR := $(shell if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then printf '%s' "$(JAVA_HOME_DIR)/jre/lib" ; else printf '%s' "$(JAVA_HOME_DIR)/conf" ; fi )
+JAVA_CONF_FIPS = $(shell if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' ; then echo 1 ; else echo 0 ; fi )
 
 FIPS_MODE_ENABLED := $(shell if [ -e "/proc/sys/crypto/fips_enabled" ] && [ 1 = $$(cat /proc/sys/crypto/fips_enabled) ] ; then echo 1 ; else echo 0 ; fi )
-TEST_PKCS11_FIPS ?= $(shell if [ 1 = $(FIPS_MODE_ENABLED) ] && [ -n "$(JAVA_HOME_DIR)" ] && cat $(JAVA_CONF_DIR)/security/java.security 2>&1 | grep -q '^fips.provider' ; then echo 1; else echo 0 ; fi )
+TEST_PKCS11_FIPS ?= $(shell if [ 1 = $(FIPS_MODE_ENABLED) ] && [ 1 = $(JAVA_CONF_FIPS) ] ; then echo 1; else echo 0 ; fi )
 NSSDB_FIPS := $(shell if [ 0 = $(FIPS_MODE_ENABLED) ] && [ 1 = $(TEST_PKCS11_FIPS) ] ; then echo 1 ; else echo 0 ; fi )
 NSS_LIBDIR = $(shell \
   if [ -e '/usr/lib64' ] ; then \
@@ -88,11 +89,10 @@ JAVA_SECURITY_PARAMS := $(shell \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
-        printf '%s ' -Djdk.tls.ephemeralDHKeySize=2048 ; \
-        if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.provider' && [ 1 = $(FIPS_MODE_ENABLED) ] ; then \
-            printf '%s ' '-Dcom.redhat.fips=true' ; \
-        else \
+        if ! [ 1 = "$(JAVA_CONF_FIPS)" ] || ! [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
             printf '%s ' '-Djavax.net.ssl.keyStore=NONE' ; \
+        else \
+            printf '%s ' '-Dcom.redhat.fips=true' ; \
         fi ; \
         if cat "$(JAVA_CONF_DIR)/security/java.security" 2>&1 | grep -q '^fips.keystore.type=pkcs12' ; then \
             printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
@@ -105,6 +105,9 @@ JAVA_SECURITY_PARAMS := $(shell \
         printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
         printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_JKS) ; \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+    fi ; \
+    if [ 1 = "$(TEST_PKCS11_FIPS)" ] || [ 1 = "$(SSLTESTS_USE_OPENSSL_CLIENT)" ] ; then \
+        printf '%s ' -Djdk.tls.ephemeralDHKeySize=2048 ; \
     fi ; \
     if [ 1 = "$(USE_URANDOM)" ] ; then \
         printf '%s ' -Djava.security.egd=file:/dev/./urandom ; \

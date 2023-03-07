@@ -63,7 +63,7 @@ jobs:
           java-version: ${{ matrix.jdkver }}
       - name: Run
         run: |
-          make ssl-tests TEST_PKCS11_FIPS=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3 SSLTESTS_IGNORE_CIPHERS="TLS_DHE_DSS_.*"
+          make ssl-tests TEST_PKCS11_FIPS=1
 
   test-linux-openssl-client:
     name: "Linux openssl client"
@@ -153,7 +153,7 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.jdkver }}
       - name: Run
-        run: make ssl-tests SSLTESTS_USE_NSS_CLIENT=1 SSLTESTS_IGNORE_PROTOCOLS=TLSv1.3
+        run: make ssl-tests SSLTESTS_USE_NSS_CLIENT=1
 
   test-linux-bcjsse:
     name: "Linux BCJSSE"
