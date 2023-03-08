@@ -27,7 +27,7 @@ jobs:
           - jdkconf: JDK 17
             jdkver: "17"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -58,7 +58,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libnss3 libnss3-tools
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -90,7 +90,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install openssl
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -121,7 +121,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install gnutls-bin
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -158,7 +158,7 @@ jobs:
               sudo cp -a listsuites /usr/bin/
               rm -f listsuites listsuites.c
           fi
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -185,7 +185,7 @@ jobs:
           - jdkconf: JDK 17
             jdkver: "17"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -209,7 +209,7 @@ jobs:
           - jdkconf: JDK 11
             jdkver: "11"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -236,7 +236,7 @@ jobs:
           - jdkconf: JDK 17
             jdkver: "17"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -264,7 +264,7 @@ jobs:
           - jdkconf: JDK 17
             jdkver: "17"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -294,7 +294,7 @@ jobs:
           - jdkconf: JDK 17
             jdkver: "17"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -320,7 +320,7 @@ jobs:
           - jdkconf: JDK 17
             jdkver: "17"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install dependencies"
         run: |
           sudo apt-get update
