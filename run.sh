@@ -50,6 +50,8 @@ fi
 
 echo Running with $JAVA...
 
+set +e # we want the compressed report and it will fail manually later
+
 mkdir -p test.${TIME}/jdk/JTwork test.${TIME}/jdk/JTreport
 ${JAVA_HOME}/bin/java -jar $JTREG_HOME/lib/jtreg.jar -v1 -a -ignore:quiet \
 		-w:test.${TIME}/jdk/JTwork -r:test.${TIME}/jdk/JTreport \
