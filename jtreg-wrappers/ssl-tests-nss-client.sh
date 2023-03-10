@@ -7,5 +7,15 @@
 
 set -eu
 rm -rf build
+
+if ! type listsuites \
+&& ! [ -e "/usr/lib64/nss/unsupported-tools/listsuites" ] \
+&& ! [ -e "/usr/lib/nss/unsupported-tools/listsuites" ] ; then
+    # if system does not contain nss listsuites utility, build it
+    curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f20d37f/cmd/listsuites/listsuites.c
+    gcc $( pkg-config --cflags nss ) -o listsuites listsuites.c  $( pkg-config --libs nss )
+    export PATH="${PATH:-}${PATH:+:}${PWD}"
+fi
+
 export JAVA_HOME="${TESTJAVA}"
 make -C "${TESTSRC:-.}/.." ssl-tests BUILD_DIR="$PWD/build" SSLTESTS_USE_NSS_CLIENT=1

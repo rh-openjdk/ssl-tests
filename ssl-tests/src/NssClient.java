@@ -53,7 +53,7 @@ public class NssClient extends ExternalClient {
         } else if (Files.exists(libPath)) {
             toolsPrefix = libPathStr;
         } else {
-            toolsPrefix = "/usr/bin/";
+            toolsPrefix = "";
         }
     }
 

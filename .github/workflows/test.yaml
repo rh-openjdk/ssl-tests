@@ -351,13 +351,7 @@ jobs:
       - name: "Install dependencies"
         run: |
           sudo apt-get update
-          sudo apt-get install openssl gnutls-bin libnss3 libnss3-tools libnss3-dev gcc pkg-config
-          if ! type listsuites ; then
-              curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f20d37f/cmd/listsuites/listsuites.c
-              gcc $( pkg-config --cflags nss ) -o listsuites listsuites.c  $( pkg-config --libs nss )
-              sudo cp -a listsuites /usr/bin/
-              rm -f listsuites listsuites.c
-          fi
+          sudo apt-get install make openssl gnutls-bin libnss3 libnss3-tools libnss3-dev gcc pkg-config
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
