@@ -1,3 +1,6 @@
 build
 certgen/build
 SSLSocketInfo/classes
+test.*
+jtreg
+jtreg*gz
