@@ -19,7 +19,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -27,8 +27,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -81,7 +81,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -89,8 +89,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - name: "Install openssl"
         run: |
@@ -115,7 +115,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -123,8 +123,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - name: "Install gnutls"
         run: |
@@ -149,7 +149,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -157,15 +157,16 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - name: "Install nss"
         run: |
           sudo apt-get update
           sudo apt-get install libnss3-tools libnss3-dev gcc pkg-config
           if ! type listsuites ; then
-              curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f20d37f/cmd/listsuites/listsuites.c
+              curl -L -f -o listsuites.c https://raw.githubusercontent.com/servo/nss/949eb9848f4fa5f83756f3ab7fdf9b0d3f
+              d37f/cmd/listsuites/listsuites.c
               gcc $( pkg-config --cflags nss ) -o listsuites listsuites.c  $( pkg-config --libs nss )
               sudo cp -a listsuites /usr/bin/
               rm -f listsuites listsuites.c
@@ -189,7 +190,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -197,8 +198,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -243,7 +244,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -251,8 +252,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -274,7 +275,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -282,8 +283,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -307,7 +308,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -315,8 +316,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
@@ -336,7 +337,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK 20
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -344,8 +345,8 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
+          - jdkconf: JDK 20
+            jdkver: "20"
     steps:
       - uses: actions/checkout@v3
       - name: "Install dependencies"
