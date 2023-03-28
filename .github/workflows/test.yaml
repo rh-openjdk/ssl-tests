@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - "*"
+env:
+  jdkver_latest: 20
 
 jobs:
   test-linux:
@@ -19,7 +21,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -27,15 +29,13 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
 
@@ -81,7 +81,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -89,8 +89,6 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - name: "Install openssl"
         run: |
@@ -101,7 +99,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: make ssl-tests SSLTESTS_USE_OPENSSL_CLIENT=1
 
@@ -115,7 +113,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -123,8 +121,6 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - name: "Install gnutls"
         run: |
@@ -135,7 +131,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1 SSLTESTS_SERVER_SHUTDOWN_OUTPUT=1
 
@@ -149,7 +145,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -157,8 +153,6 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - name: "Install nss"
         run: |
@@ -175,7 +169,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: make ssl-tests SSLTESTS_USE_NSS_CLIENT=1
 
@@ -189,7 +183,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -197,15 +191,13 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: make ssl-tests TEST_BCJSSE=1
 
@@ -243,7 +235,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -251,15 +243,13 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         # Legacy algorithms used for keystore as workaround to BC issue:
         # https://github.com/bcgit/bc-java/issues/958
@@ -274,7 +264,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -282,15 +272,13 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - uses: msys2/setup-msys2@v2
         with:
           update: true
@@ -307,7 +295,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -315,15 +303,13 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
   test-linux-jtreg:
@@ -336,7 +322,7 @@ jobs:
           - JDK 8
           - JDK 11
           - JDK 17
-          - JDK 19
+          - JDK Latest
         include:
           - jdkconf: JDK 8
             jdkver: "8"
@@ -344,8 +330,6 @@ jobs:
             jdkver: "11"
           - jdkconf: JDK 17
             jdkver: "17"
-          - jdkconf: JDK 19
-            jdkver: "19"
     steps:
       - uses: actions/checkout@v3
       - name: "Install dependencies"
@@ -356,7 +340,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.jdkver }}
+          java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Download jtreg
         run: |
           wget https://ci.adoptopenjdk.net/view/Dependencies/job/dependency_pipeline/lastSuccessfulBuild/artifact/jtreg/jtreg5.1-b01.tar.gz
