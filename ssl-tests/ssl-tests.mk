@@ -6,6 +6,11 @@ SSLTESTS_IGNORE_PROTOCOLS ?= $(shell \
         if ! [ 1 = "$(JAVA_CONF_FIPS)" ] || ! [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
             printf '%s' 'TLSv1|TLSv1.1|TLSv1.3' ; \
         fi ; \
+    else \
+        if grep -q "Red Hat Enterprise Linux Server release 7" /etc/redhat-release \
+        && [ "aarch64" = "$$( uname -m )" ] ; then \
+            printf '%s' 'TLSv1.3' ; \
+        fi ; \
     fi ; \
 )
 SSLTESTS_IGNORE_CIPHERS ?= $(shell \
