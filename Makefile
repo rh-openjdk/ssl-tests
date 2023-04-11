@@ -28,6 +28,7 @@ NSS_LIBDIR = $(shell \
 )
 KEYTOOL_PARAMS := $(shell printf '%s ' '-J-Dcom.redhat.fips=false' ; if [ 1 = "$(KEYSTORE_PKCS12_LEGACY)" ] ; then printf '%s ' '-J-Dkeystore.pkcs12.legacy' ; fi )
 
+TOP_DIR = .
 BUILD_DIR = build
 
 JAVA_PKCS11_FIPS_CONF_DIR = $(BUILD_DIR)/java-pkcs11-conf
@@ -60,7 +61,7 @@ JAVA_BC_2ND_SECURITY_CFG = $(JAVA_BC_2ND_CONF_DIR)/java.security
 
 all: ssl-tests
 
-CERTGEN_DIR = certgen
+CERTGEN_DIR = $(TOP_DIR)/certgen
 CERTGEN_BUILD_DIR = $(BUILD_DIR)/certgen
 include $(CERTGEN_DIR)/certgen.mk
 
@@ -151,20 +152,20 @@ JAVA_CP_APPEND := $(shell \
     fi ; \
 )
 
-SSLCONTEXTINFO_DIR = SSLContextInfo
+SSLCONTEXTINFO_DIR = $(TOP_DIR)/SSLContextInfo
 SSLCONTEXTINFO_CLASSES_DIR = $(BUILD_DIR)/SSLContextInfo
 include $(SSLCONTEXTINFO_DIR)/SSLContextInfo.mk
 
-SSLSOCKETINFO_DIR = SSLSocketInfo
+SSLSOCKETINFO_DIR = $(TOP_DIR)/SSLSocketInfo
 SSLSOCKETINFO_CLASSES_DIR = $(BUILD_DIR)/SSLSocketInfo
 include $(SSLSOCKETINFO_DIR)/SSLSocketInfo.mk
 
-SSLTESTS_DIR = ssl-tests
+SSLTESTS_DIR = $(TOP_DIR)/ssl-tests
 SSLTESTS_CLASSES_DIR = $(BUILD_DIR)/ssl-tests
 include $(SSLTESTS_DIR)/ssl-tests.mk
 
 clean:
-	rm -rf build
+	rm -rf $(BUILD_DIR)
 
 $(JAVA_PKCS11_FIPS_CONF_DIR):
 	mkdir $@

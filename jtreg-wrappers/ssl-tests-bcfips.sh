@@ -8,4 +8,4 @@
 set -eu
 rm -rf build
 export JAVA_HOME="${TESTJAVA}"
-make -C "${TESTSRC:-.}/.." ssl-tests  BUILD_DIR="$PWD/build" TEST_BCFIPS=1 USE_URANDOM=1
+make -f "${TESTSRC:-.}/../Makefile" ssl-tests  TOP_DIR="${TESTSRC:-.}/.." TEST_BCFIPS=1 USE_URANDOM=1
