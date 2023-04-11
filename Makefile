@@ -77,18 +77,27 @@ JAVA_SECURITY_PARAMS := $(shell \
         if [ 13 -le $(JAVA_VERSION_MAJOR) ] ; then \
             printf '%s ' '-Djdk.tls.namedGroups="secp256r1, secp384r1, ffdhe2048, ffdhe3072"' ; \
         fi ; \
+        if [ 1 = "$(JAVA_CONF_FIPS)" ] && [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
+            printf '%s ' '-Dcom.redhat.fips=0' ; \
+        fi ; \
     elif [ 1 = "$(TEST_BCJSSE)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_BCJSSE_SECURITY_CFG) ; \
         printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
         printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
         printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_P12) ; \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+        if [ 1 = "$(JAVA_CONF_FIPS)" ] && [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
+            printf '%s ' '-Dcom.redhat.fips=0' ; \
+        fi ; \
     elif [ 1 = "$(TEST_BC_2ND)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_BC_2ND_SECURITY_CFG) ; \
         printf '%s ' -Djavax.net.ssl.keyStore=$(KEYSTORE_P12) ; \
         printf '%s ' -Djavax.net.ssl.keyStorePassword=$(KEYSTORE_PASSWORD) ; \
         printf '%s ' -Djavax.net.ssl.trustStore=$(TRUSTSTORE_P12) ; \
         printf '%s ' -Djavax.net.ssl.trustStorePassword=$(TRUSTSTORE_PASSWORD) ; \
+        if [ 1 = "$(JAVA_CONF_FIPS)" ] && [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
+            printf '%s ' '-Dcom.redhat.fips=0' ; \
+        fi ; \
     elif [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         printf '%s ' -Djava.security.properties==$(JAVA_PKCS11_FIPS_SECURITY_CFG) ; \
         if ! [ 1 = "$(JAVA_CONF_FIPS)" ] || ! [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
@@ -113,7 +122,7 @@ JAVA_SECURITY_PARAMS := $(shell \
     fi ; \
     if [ 1 = "$(USE_URANDOM)" ] ; then \
         printf '%s ' -Djava.security.egd=file:/dev/./urandom ; \
-    fi \
+    fi ; \
 )
 JAVA_SECURITY_DEPS := $(shell \
     if [ 1 = "$(TEST_BCFIPS)" ] ; then \
