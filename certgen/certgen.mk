@@ -160,8 +160,8 @@ $(SERVER_CRT_EC): $(SERVER_CSR_EC) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
 
 # generate server DSA param (fallback to pregenerated, needed in FIPS mode)
 $(SERVER_KEY_PARAM_DSA): | $(CERTGEN_BUILD_DIR)
-	openssl dsaparam -out $(SERVER_KEY_PARAM_DSA) $(DSA_KEY_SIZE) \
-	|| cp $(CERTGEN_DIR)/server-dsa.param $(SERVER_KEY_PARAM_DSA)
+	# openssl dsaparam -out $(SERVER_KEY_PARAM_DSA) $(DSA_KEY_SIZE)
+	cp $(CERTGEN_DIR)/server-dsa.param $(SERVER_KEY_PARAM_DSA)
 
 # generate server DSA key (fallback to pregenerated, needed in FIPS mode)
 $(SERVER_KEY_DSA): $(SERVER_KEY_PARAM_DSA) | $(CERTGEN_BUILD_DIR)
