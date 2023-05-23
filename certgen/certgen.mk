@@ -186,15 +186,19 @@ $(SERVER_CRT_DSA): $(SERVER_CSR_DSA) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
 $(CA_CHAIN_CRT): $(ROOT_CRT) $(INTERMEDIATE_CRT)
 	cat $(ROOT_CRT) $(INTERMEDIATE_CRT) > $(CA_CHAIN_CRT)
 
+# workaround to be able to generate pkcs12 keystore in fips
+# See: https://github.com/openssl/openssl/issues/20617
+OPENSSL_NOFIPS := $(shell if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then printf 'OPENSSL_CONF=%s %s' "$(CERTGEN_CONFS_DIR)/empty.cfg" "$(OPENSSL)" ; else printf '%s' "$(OPENSSL)" ; fi )
+
 # create keystore in PKCS12 format, which can then be imported to jks
 $(KEYSORE_P12_RSA): $(SERVER_CRT_RSA) $(SERVER_KEY_RSA) $(CA_CHAIN_CRT)
-	$(OPENSSL) pkcs12 -export -chain -in $(SERVER_CRT_RSA) -inkey $(SERVER_KEY_RSA) \
+	$(OPENSSL_NOFIPS) pkcs12 -export -chain -in $(SERVER_CRT_RSA) -inkey $(SERVER_KEY_RSA) \
 	-name server-rsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_RSA)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
 # create EC keystore in PKCS12 format, which can then be imported to jks
 $(KEYSORE_P12_EC): $(SERVER_CRT_EC) $(SERVER_KEY_EC) $(CA_CHAIN_CRT)
-	$(OPENSSL) pkcs12 -export -chain -in $(SERVER_CRT_EC) -inkey $(SERVER_KEY_EC) \
+	$(OPENSSL_NOFIPS) pkcs12 -export -chain -in $(SERVER_CRT_EC) -inkey $(SERVER_KEY_EC) \
 	-name server-ec -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_EC)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
