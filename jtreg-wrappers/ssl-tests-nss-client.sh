@@ -8,7 +8,7 @@
 set -eu
 rm -rf build
 
-if ! type listsuites \
+if ! type listsuites > /dev/null 2>&1 \
 && ! [ -e "/usr/lib64/nss/unsupported-tools/listsuites" ] \
 && ! [ -e "/usr/lib/nss/unsupported-tools/listsuites" ] ; then
     # if system does not contain nss listsuites utility, build it
