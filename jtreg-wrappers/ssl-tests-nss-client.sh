@@ -8,9 +8,17 @@
 set -eu
 rm -rf build
 
-if grep -q 'Alpine' /etc/os-release > /dev/null 2>&1 ; then
-    echo "Skipping on Alpine, as it does not have required NSS tools"
-    exit 0
+if ! type tstclnt > /dev/null 2>&1 \
+&& ! [ -e "/usr/lib64/nss/unsupported-tools/tstclnt" ] \
+&& ! [ -e "/usr/lib/nss/unsupported-tools/tstclnt" ] ; then
+    if grep -Eiq 'Fedora|Red Hat|Ubuntu' /etc/os-release > /dev/null 2>&1 ; then
+        # Error on system, where it should be available
+        echo "Error: Missing tstclnt tool, please install NSS tools"
+        exit 1
+    else
+        echo "Skipping, required tstclnt tool not found"
+        exit 0
+    fi
 fi
 
 if ! type listsuites > /dev/null 2>&1 \
