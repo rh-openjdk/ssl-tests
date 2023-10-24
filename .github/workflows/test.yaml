@@ -133,7 +133,7 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.jdkver || env.jdkver_latest }}
       - name: Run
-        run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1 SSLTESTS_SERVER_SHUTDOWN_OUTPUT=1
+        run: make ssl-tests SSLTESTS_USE_GNUTLS_CLIENT=1
 
   test-linux-nss-client:
     name: "Linux nss client"
