@@ -116,6 +116,9 @@ public class GnutlsClient extends ExternalClient {
             if (line.length() == 0) {
                 break;
             }
+            if (line.startsWith("Certificate types")) {
+                break;
+            }
             components = line.split("\\s+");
             if (components.length < 4) {
                 break;
@@ -142,7 +145,7 @@ public class GnutlsClient extends ExternalClient {
         if (clientLogfile) {
             return new  ProcessBuilder("gnutls-cli", "--x509cafile=" + cafile, "--logfile=" + logfile, "--port=" + port, host);
         } else {
-            return new  ProcessBuilder("gnutls-cli", "--x509cafile=" + cafile, "--port=" + port, host);
+            return new  ProcessBuilder("gnutls-cli", "--x509cafile", cafile, "--port", String.valueOf(port), host);
         }
     }
 
