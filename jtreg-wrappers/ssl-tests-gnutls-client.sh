@@ -1,6 +1,6 @@
 #!/bin/sh
 # @test
-# @requires os.family == "linux"
+# @requires os.family == "linux" & bin.gnutlscli != "false"
 # @bug 6666666
 # @summary ssl-tests with gnutls client
 # @run shell/timeout=1000 ssl-tests-gnutls-client.sh
