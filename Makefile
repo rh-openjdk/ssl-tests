@@ -185,7 +185,7 @@ $(BC_JARS_DIRS):
 $(JAVA_PKCS11_FIPS_NSS_CFG): | $(JAVA_PKCS11_FIPS_CONF_DIR)
 	if [ -e $(JAVA_CONF_DIR)/security/nss.fips.cfg ] ; then \
 		cp $(JAVA_CONF_DIR)/security/nss.fips.cfg $@ ; \
-	    sed -i 's;^nssSecmodDirectory[[:space:]]*=.*$$;nssSecmodDirectory = $(NSSDB_DIR);g' $@ ; \
+	    sed -i -e 's;^nssSecmodDirectory[[:space:]]*=.*$$;nssSecmodDirectory = $(NSSDB_DIR);g' $@ ; \
 	else \
 		printf '%s\n%s\n%s\n%s\n%s\n%s\n' \
 		"name = NSS-FIPS" \
@@ -202,17 +202,17 @@ $(JAVA_PKCS11_FIPS_SECURITY_CFG): $(JAVA_PKCS11_FIPS_NSS_CFG) | $(JAVA_PKCS11_FI
 	printf '\n' >> $@ ;
 	if cat $@ | grep -q '^fips.provider' && [ 1 = $(FIPS_MODE_ENABLED) ] ; then \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
-			sed -i 's;^fips.provider.1=sun.security.pkcs11.SunPKCS11.*$$;fips.provider.1=sun.security.pkcs11.SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ; \
+			sed -i -e 's;^fips.provider.1=sun.security.pkcs11.SunPKCS11.*$$;fips.provider.1=sun.security.pkcs11.SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ; \
 		else \
-			sed -i 's;^fips.provider.1=SunPKCS11.*$$;fips.provider.1=SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ;	\
+			sed -i -e 's;^fips.provider.1=SunPKCS11.*$$;fips.provider.1=SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG);g' $@ ;	\
 		fi ; \
 		if ! [ 0 = "$(SET_RPMS_KEYSTORE_TYPE)" ] \
 		&& cat $@ 2>&1 | grep -q '^fips.keystore.type=PKCS11' ; then \
-			sed -i "s;^keystore.type=.*$$;keystore.type=PKCS11;g" $@ ; \
+			sed -i -e "s;^keystore.type=.*$$;keystore.type=PKCS11;g" $@ ; \
 		fi \
 	else \
-		sed -i "s;^security\.provider\.;#security.provider;g" $@ ; \
-		sed -i 's;^keystore.type=.*$$;keystore.type=PKCS11;g' $@ ; \
+		sed -i -e "s;^security\.provider\.;#security.provider;g" $@ ; \
+		sed -i -e 's;^keystore.type=.*$$;keystore.type=PKCS11;g' $@ ; \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 			printf '%s\n%s\n%s\n%s\n' \
 			"security.provider.1=sun.security.pkcs11.SunPKCS11 $(JAVA_PKCS11_FIPS_NSS_CFG)" \
@@ -256,7 +256,7 @@ $(JAVA_BCFIPS_SECURITY_CFG): | $(JAVA_BCFIPS_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
 	printf '\n' >> $@ ;
 	if cat $@ | grep -q '^fips.provider' ; then \
-		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
+		sed -i -e 's;^fips.provider;#fips.provider;g' $@ ; \
 		if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 			printf '%s\n%s\n%s\n' \
 			"fips.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider C:HYBRID;ENABLE{All};" \
@@ -271,8 +271,8 @@ $(JAVA_BCFIPS_SECURITY_CFG): | $(JAVA_BCFIPS_CONF_DIR)
 			>> $@ ; \
 		fi ; \
 	fi
-	sed -i 's;^security.provider;#security.provider;g' $@
-	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
+	sed -i -e 's;^security.provider;#security.provider;g' $@
+	sed -i -e 's;keystore.type=.*;keystore.type=pkcs12;g' $@
 	if [ 8 -ge $(JAVA_VERSION_MAJOR) ] ; then \
 		printf '%s\n%s\n%s\n%s\n' \
 		"security.provider.1=org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider C:HYBRID;ENABLE{All};" \
@@ -293,15 +293,15 @@ $(JAVA_BCJSSE_SECURITY_CFG): | $(JAVA_BCJSSE_CONF_DIR)
 	cp $(JAVA_CONF_DIR)/security/java.security $@
 	printf '\n' >> $@ ;
 	if cat $@ | grep -q '^fips.provider' ; then \
-		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
+		sed -i -e 's;^fips.provider;#fips.provider;g' $@ ; \
 		printf '%s\n%s\n%s\n' \
 		"fips.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
 		"fips.provider.2=org.bouncycastle.jsse.provider.BouncyCastleJsseProvider BC" \
 		"fips.provider.3=sun.security.provider.Sun" \
 		>> $@ ; \
 	fi
-	sed -i 's;^security.provider;#security.provider;g' $@
-	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
+	sed -i -e 's;^security.provider;#security.provider;g' $@
+	sed -i -e 's;keystore.type=.*;keystore.type=pkcs12;g' $@
 	printf '%s\n%s\n%s\n' \
 	"security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider" \
 	"security.provider.2=org.bouncycastle.jsse.provider.BouncyCastleJsseProvider BC" \
@@ -324,15 +324,15 @@ $(JAVA_BC_2ND_SECURITY_CFG): | $(JAVA_BC_2ND_CONF_DIR)
 		i=$$(( i + 1 )) ; \
 	done ; \
 	while [ $${i} -ge 2 ] ; do \
-		sed -i "s;^security.provider.$${i}[[:space:]]*=;security.provider.$$(( i + 1 ))=;g"  $@ ; \
+		sed -i -e "s;^security.provider.$${i}[[:space:]]*=;security.provider.$$(( i + 1 ))=;g"  $@ ; \
 		i=$$(( i - 1 )) ; \
 	done
-	sed -i 's;keystore.type=.*;keystore.type=pkcs12;g' $@
+	sed -i -e 's;keystore.type=.*;keystore.type=pkcs12;g' $@
 	printf '%s\n' \
 	"security.provider.2=org.bouncycastle.jce.provider.BouncyCastleProvider" \
 	>> $@ ;
 	if cat $@ | grep -q '^fips.provider' ; then \
-		sed -i 's;^fips.provider;#fips.provider;g' $@ ; \
+		sed -i -e 's;^fips.provider;#fips.provider;g' $@ ; \
 	    providers="$$( cat $@ | grep '^security.provider.*$$' )" ; \
 	    printf '%s\n' "$${providers}" | sed 's;^security.provider;fips.provider;g' \
 	    >> $@ ; \
