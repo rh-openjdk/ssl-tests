@@ -1,6 +1,7 @@
 #!/bin/sh
 # @test
 # @bug 6666666
+# @requires os.family == "linux" | os.family == "windows"
 # @summary ssl-tests with BouncyCastle provider (BCJSSE configuration)
 # @run shell/timeout=1000 ssl-tests-bcjsse.sh
 
