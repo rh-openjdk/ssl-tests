@@ -1,7 +1,9 @@
 #!/bin/bash
 
-################################################################################################
-# to run without jtreg (without this wrapper), itshould be enough to use main makefile
+###############################################################################################
+# bash run.sh jdk [bug]
+# bash run.sh jdk [dir]
+# to run without jtreg (without this wrapper), it should be enough to use main makefile
 ################################################################################################
 
 SCRIPT_SOURCE="${BASH_SOURCE[0]}"
@@ -26,12 +28,16 @@ if [ "x$JAVA_HOME" == "x" ] ; then
   JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))
 fi;
 
-TIME=`date +%s`
+TIME=$(date +%s)
 BUGID=${2}
 
-if [ "x$BUGID" != "x" ] ; then 
+FOLDER=$SCRIPT_DIR/jtreg-wrappers
+if [ "x$BUGID" != "x" -a -e "$BUGID" ] ; then
+    FOLDER="$BUGID"
+    BUGID=""
+elif [ "x$BUGID" != "x" ]; then
   BUGID="-bug:$BUGID"
-fi;
+fi
 
 if [ "x$JTREG_HOME" == "x" ] ; then
   JTREG_HOME="$SCRIPT_DIR/jtreg"
@@ -50,16 +56,15 @@ fi
 
 echo Running with $JAVA...
 
-set +e # we want the compressed report and it will fail manually later
-
+r=0
 mkdir -p test.${TIME}/jdk/JTwork test.${TIME}/jdk/JTreport
 ${JAVA_HOME}/bin/java -jar $JTREG_HOME/lib/jtreg.jar -v1 -a -ignore:quiet \
-		-w:test.${TIME}/jdk/JTwork -r:test.${TIME}/jdk/JTreport \
-		-jdk:$JAVA \
-		-xml \
-		$BUGID \
-		$SCRIPT_DIR/jtreg-wrappers \
-	    | tee test.${TIME}/tests.log
+  -w:test.${TIME}/jdk/JTwork -r:test.${TIME}/jdk/JTreport \
+  -jdk:$JAVA \
+  -xml \
+  $BUGID \
+  $envVarArg \
+  $FOLDER | tee test.${TIME}/tests.log || r=$?
 
 tar -czf test.${TIME}.tar.gz test.${TIME}/jdk/JTwork test.${TIME}/jdk/JTreport
 
@@ -71,3 +76,5 @@ fi
 grep -Eqi '^passed:' test.${TIME}/tests.log || exit 1
 # check for failures/errors in tests.log 
 ! grep -Eqi '^(failed|error):' test.${TIME}/tests.log || exit 1
+
+exit $r
