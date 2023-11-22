@@ -1,6 +1,7 @@
 #!/bin/sh
 # @test
 # @bug 6666666
+# @requires os.family == "linux" | os.family == "windows" | os.family == "mac"
 # @summary ssl-tests
 # @run shell/timeout=1000 ssl-tests.sh
 
