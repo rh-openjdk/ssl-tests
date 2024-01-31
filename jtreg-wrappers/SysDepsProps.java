@@ -1,7 +1,11 @@
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
@@ -13,30 +17,58 @@ public class SysDepsProps implements Callable<Map<String, String>> {
             @Override
             public void run() {
                 try {
-                    try {
-                        while (is.read() >= 0) { /* discard */ };
-                    } finally {
-                        is.close();
-                    }
+                    while (is.read() >= 0) { /* discard */ };
                 } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         };
     }
 
-    boolean checkOnPath(String cmd) {
-        ProcessBuilder pb = new  ProcessBuilder(cmd, "--help");
+    Thread streamReader(final InputStream is, final List<String> linesBuf) {
+        if (linesBuf == null) {
+            return streamDiscarder(is);
+        }
+        return new Thread() {
+            @Override
+            public void run() {
+                try (InputStreamReader isr = new InputStreamReader(is);
+                    BufferedReader br = new BufferedReader(isr)){
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        linesBuf.add(line);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+    }
+
+    boolean runCmd(String[] command, List<String> stdoutBuf, List<String> stderrBuf) {
+        ProcessBuilder pb = new  ProcessBuilder(command);
         Process p = null;
-        Thread outDiscarder = null;
-        Thread errDiscarder = null;
+        Thread outReader = null;
+        Thread errReader= null;
         int retVal = 0;
         try {
             p = pb.start(); // throws exception if program does not exist
-            outDiscarder = streamDiscarder(p.getInputStream());
-            outDiscarder.start();
-            errDiscarder = streamDiscarder(p.getErrorStream());
-            errDiscarder.start();
+            outReader = streamReader(p.getInputStream(), stdoutBuf);
+            outReader.start();
+            errReader = streamReader(p.getErrorStream(), stderrBuf);
+            errReader.start();
             p.getOutputStream().close();
             p.waitFor();
             return true;
@@ -46,31 +78,66 @@ public class SysDepsProps implements Callable<Map<String, String>> {
             }
         } finally {
             try {
-                if (outDiscarder != null) {
-                    outDiscarder.join();
+                if (outReader != null) {
+                    outReader.join();
                 }
-                if (errDiscarder != null) {
-                    errDiscarder.join();
+                if (errReader != null) {
+                    errReader.join();
                 }
             } catch (InterruptedException ex) {}
         }
         return false;
     }
 
+    boolean checkOnPath(String cmd) {
+        return runCmd(new String[]{cmd, "--help"}, null, null);
+    }
+
+    boolean containsString(List<String> list, String str) {
+        for (String s : list) {
+            if (s.contains(str)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    boolean checkSupportsOption(String cmd, String option) {
+        List<String> stdoutBuf = new ArrayList<String>();
+        List<String> stderrBuf = new ArrayList<String>();
+        if (!runCmd(new String[]{cmd, "--help"}, stdoutBuf, stderrBuf)) {
+            return false;
+        }
+        return containsString(stdoutBuf, option) || containsString(stderrBuf, option);
+    }
+
     boolean fileExists(String path) {
         return Files.exists(FileSystems.getDefault().getPath(path));
     }
 
-    boolean checkGnutlsCli() {
-        return checkOnPath("gnutls-cli");
+    String getTstclntCmd() {
+        String cmd = "/usr/lib64/nss/unsupported-tools/tstclnt";
+        if (fileExists(cmd)) {
+            return cmd;
+        }
+        cmd = "/usr/lib/nss/unsupported-tools/tstclnt";
+        if (fileExists(cmd)) {
+            return cmd;
+        }
+        cmd = "tstclnt";
+        if (checkOnPath(cmd)) {
+            return cmd;
+        }
+        return null;
     }
 
     boolean checkTstclnt() {
-        if (fileExists("/usr/lib64/nss/unsupported-tools/tstclnt")
-            || fileExists("/usr/lib/nss/unsupported-tools/tstclnt")) {
-            return true;
-        }
-        return checkOnPath("tstclnt");
+        String cmd = getTstclntCmd();
+        return cmd == null ? false : checkSupportsOption(cmd, "-Q");
+    }
+
+    boolean checkGnutlsCli() {
+        return checkOnPath("gnutls-cli");
     }
 
     @Override
