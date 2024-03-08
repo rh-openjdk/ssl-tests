@@ -45,7 +45,15 @@ ssl-tests-clean:
 ssl-tests-build: $(SSLTESTS_CLASSES_DIR)
 
 ssl-tests-run: $(SSLTESTS_CLASSES_DIR) $(JAVA_SECURITY_DEPS) $(SSLTESTS_NSSDB_DEP)
+	if $(JAVAC) -version 2>&1 | grep " 11" ; then \
+		exports=""; \
+	elif $(JAVAC) -version 2>&1 | grep " 1.8.0" ; then \
+		exports=""; \
+	else \
+		exports="--add-exports java.base/sun.security.internal.spec=ALL-UNNAMED"; \
+	fi ;\
 	$(JAVA) -cp "$<$(JAVA_CP_APPEND)" \
+	$$exports \
 	$(JAVA_SECURITY_PARAMS) \
 	$(SSLTESTS_ONLY_SSL_DEFAULTS_PARAM) $(SSLTESTS_SSL_CONFIG_FILTER_PARAM) $(SSLTESTS_IGNORE_PROTOCOLS_PARAM) $(SSLTESTS_IGNORE_CIPHERS_PARAM) $(SSLTESTS_USE_OPENSSL_CLIENT_PARAM) $(SSLTESTS_USE_GNUTLS_CLIENT_PARAM) $(SSLTESTS_USE_NSS_CLIENT_PARAM) $(SSLTESTS_SERVER_SHUTDOWN_OUTPUT_PARAM) \
 	$(SSLTESTS_CUSTOM_JAVA_PARAMS) \
