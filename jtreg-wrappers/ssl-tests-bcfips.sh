@@ -1,6 +1,6 @@
 #!/bin/sh
 # @test
-# @bug 6666666
+# @bug 6666662
 # @requires jdk.version.major <= 11 & ( os.family == "linux" | os.family == "windows" )
 # @summary ssl-test-bc with BouncyCastle provider (BCFIPS configuration)
 # @run shell/timeout=4000 ssl-tests-bcfips.sh

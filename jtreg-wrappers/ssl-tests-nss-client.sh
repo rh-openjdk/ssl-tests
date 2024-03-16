@@ -1,7 +1,7 @@
 #!/bin/sh
 # @test
 # @requires os.family == "linux" & bin.tstclnt != "false"
-# @bug 6666666
+# @bug 6666665
 # @summary ssl-test with nss client
 # @run shell/timeout=1000 ssl-tests-nss-client.sh
 
