@@ -124,17 +124,20 @@ if [ "x$CYGWIN" == "xtrue" ] ; then
   JTREG_JAR="$(cygpath -aw "${JTREG_JAR}")"
 fi
 
+jtWork="test.${TIME}/jdk/JTwork"
+jtReport="test.${TIME}/jdk/JTreport"
+
 r=0
-mkdir -p test.${TIME}/jdk/JTwork test.${TIME}/jdk/JTreport
+mkdir -p "${jtWork}" "${jtReport}"
 "${JAVA_HOME}/bin/java" -jar "$JTREG_JAR" -v1 -a -ignore:quiet \
-  -w:test.${TIME}/jdk/JTwork -r:test.${TIME}/jdk/JTreport \
+  -w:"${jtWork}" -r:"${jtReport}" \
   -jdk:"$JAVA" \
   -xml \
   $BUGID \
   $envVarArg \
   $FOLDER | tee test.${TIME}/tests.log || r=$?
 
-tar -czf test.${TIME}.tar.gz test.${TIME}/jdk/JTwork test.${TIME}/jdk/JTreport
+tar -czf test.${TIME}.tar.gz "${jtWork}" "${jtReport}"
 
 popd
 
