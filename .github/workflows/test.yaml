@@ -9,7 +9,7 @@ on:
       - "*"
 
 jobs:
-  test-linux:
+  test-linux-jtreg:
     name: "Linux Jtreg"
     runs-on: "ubuntu-latest"
     strategy:
@@ -44,11 +44,12 @@ jobs:
         run: ./run.sh "${JAVA_HOME}"
       - name: Upload results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: "linux-jtreg-jdk${{ matrix.jdkver}}"
           path: "test.*.tar.gz"
 
-  test-macos:
+  test-macos-jtreg:
     name: "MacOS Jtreg"
     runs-on: "macos-latest"
     strategy:
@@ -76,11 +77,12 @@ jobs:
         run: ./run.sh "${JAVA_HOME}"
       - name: Upload results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: "macos-jtreg-jdk${{ matrix.jdkver}}"
           path: "test.*.tar.gz"
 
-  test-windows-cygwin:
+  test-windows-cygwin-jtreg:
     name: "Windows-cygwin Jtreg"
     runs-on: "windows-latest"
     defaults:
@@ -124,11 +126,12 @@ jobs:
              bash.exe --login --norc -o igncr -c "cd \"$GITHUB_WORKSPACE\" && ./run.sh \"${JAVA_HOME}\""
       - name: Upload results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: "windows-cygwin-jdk${{ matrix.jdkver}}"
           path: "test.*.tar.gz"
 
-#  test-windows-msys2:
+#  test-windows-msys2-treg:
 #    name: "Windows-msys2 Jtreg"
 #    runs-on: "windows-latest"
 #    strategy:
@@ -168,8 +171,8 @@ jobs:
 #        with:
 #          path: "test.*.tar.gz"
 
-  test-linux-SSLContextInfo-SSLSocketInfo-ssl-tests:
-    name: "Linux SSLContextInfo SSLSocketInfo ssl-tests"
+  test-linux:
+    name: "Linux"
     runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
@@ -433,8 +436,8 @@ jobs:
         # https://github.com/bcgit/bc-java/issues/958
         run: make ssl-tests TEST_BC_2ND=1 KEYSTORE_PKCS12_LEGACY=1
 
-  test-windows-msys2-SSLContextInfo-SSLSocketInfo-ssl-tests:
-    name: "Window msys2 SSLContextInfo SSLSocketInfo ssl-tests"
+  test-windows:
+    name: "Windows"
     runs-on: "windows-latest"
     strategy:
       fail-fast: false
@@ -467,8 +470,8 @@ jobs:
       - name: Run
         run: make SSLContextInfo SSLSocketInfo ssl-tests
 
-  test-macos-SSLContextInfo-SSLSocketInfo-ssl-tests:
-    name: "MacOS SSLContextInfo SSLSocketInfo ssl-tests"
+  test-macos:
+    name: "MacOS"
     runs-on: "macos-latest"
     strategy:
       fail-fast: false
