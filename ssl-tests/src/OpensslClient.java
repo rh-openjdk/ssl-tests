@@ -117,7 +117,8 @@ public class OpensslClient extends ExternalClient {
         }
         String name;
         Path path = FileSystems.getDefault().getPath("/etc/crypto-policies/back-ends/openssl.config");
-        if (Files.exists(path)) {
+        Path path2 = FileSystems.getDefault().getPath("/etc/crypto-policies/back-ends/opensslcnf.config");
+        if (Files.exists(path) || Files.exists(path2)) {
             /* Ciphers enabled by current system crypto policy */
             name="PROFILE=SYSTEM";
         } else {
