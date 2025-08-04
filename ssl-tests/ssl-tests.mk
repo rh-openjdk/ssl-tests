@@ -5,6 +5,8 @@ SSLTESTS_IGNORE_PROTOCOLS ?= $(shell \
     if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
         if ! [ 1 = "$(JAVA_CONF_FIPS)" ] || ! [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then \
             printf '%s' 'TLSv1|TLSv1.1|TLSv1.3' ; \
+        elif [ 1 = "$(SSLTESTS_USE_OPENSSL_CLIENT)" ] || [ 1 = "$(SSLTESTS_USE_GNUTLS_CLIENT)" ] || [ 1 = "$(SSLTESTS_USE_NSS_CLIENT)" ] ; then \
+            printf '%s' 'TLSv1.2' ; \
         fi ; \
     else \
         if grep -q "Red Hat Enterprise Linux Server release 7" /etc/redhat-release \
