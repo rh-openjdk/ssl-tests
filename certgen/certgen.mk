@@ -170,12 +170,12 @@ $(SERVER_KEY_DSA): $(SERVER_KEY_PARAM_DSA) | $(CERTGEN_BUILD_DIR)
 
 # generate server DSA csr (certificate signing request)
 $(SERVER_CSR_DSA): $(SERVER_KEY_DSA) $(SERVER_CNF_DSA)
-	$(OPENSSL) req -new -key $(SERVER_KEY_DSA) -config $(SERVER_CNF_DSA) \
+	$(OPENSSL_NOFIPS) req -new -key $(SERVER_KEY_DSA) -config $(SERVER_CNF_DSA) \
 	-out $(SERVER_CSR_DSA)
 
 # generate server DSA certificate, using csr, signed by intermediate CA
 $(SERVER_CRT_DSA): $(SERVER_CSR_DSA) $(INTERMEDIATE_CRT) $(INTERMEDIATE_KEY)
-	$(OPENSSL) x509 -req -days $(CRT_DAYS) -in $(SERVER_CSR_DSA) \
+	$(OPENSSL_NOFIPS) x509 -req -days $(CRT_DAYS) -in $(SERVER_CSR_DSA) \
 	-CA $(INTERMEDIATE_CRT) -CAkey $(INTERMEDIATE_KEY) \
 	-CAserial $(INTERMEDIATE_SRL) -CAcreateserial \
 	-extfile $(INTERMEDIATE_CNF) -extensions server_ext -out $(SERVER_CRT_DSA)
@@ -188,7 +188,7 @@ $(CA_CHAIN_CRT): $(ROOT_CRT) $(INTERMEDIATE_CRT)
 
 # workaround to be able to generate pkcs12 keystore in fips
 # See: https://github.com/openssl/openssl/issues/20617
-OPENSSL_NOFIPS := $(shell if [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then printf 'OPENSSL_CONF=%s %s' "$(CERTGEN_CONFS_DIR)/empty.cfg" "$(OPENSSL)" ; else printf '%s' "$(OPENSSL)" ; fi )
+OPENSSL_NOFIPS := $(shell if [ 1 = "$(TEST_PKCS11_FIPS)" ] || [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then printf 'OPENSSL_CONF=%s %s' "$(CERTGEN_CONFS_DIR)/empty.cfg" "$(OPENSSL)" ; else printf '%s' "$(OPENSSL)" ; fi )
 
 # create keystore in PKCS12 format, which can then be imported to jks
 $(KEYSORE_P12_RSA): $(SERVER_CRT_RSA) $(SERVER_KEY_RSA) $(CA_CHAIN_CRT)
@@ -204,7 +204,7 @@ $(KEYSORE_P12_EC): $(SERVER_CRT_EC) $(SERVER_KEY_EC) $(CA_CHAIN_CRT)
 
 # create DSA keystore in PKCS12 format, which can then be imported to jks
 $(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
-	$(OPENSSL) pkcs12 -export -chain -in $(SERVER_CRT_DSA) -inkey $(SERVER_KEY_DSA) \
+	$(OPENSSL_NOFIPS) pkcs12 -export -chain -in $(SERVER_CRT_DSA) -inkey $(SERVER_KEY_DSA) \
 	-name server-dsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_DSA)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
