@@ -61,9 +61,9 @@ SERVER_CRT_DSA = $(CERTGEN_BUILD_DIR)/server-dsa.crt
 SERVER_CNF_DSA = $(CERTGEN_CONFS_DIR)/server.cnf
 
 CA_CHAIN_CRT = $(CERTGEN_BUILD_DIR)/cachain.crt
-KEYSORE_P12_RSA = $(CERTGEN_BUILD_DIR)/keystore-rsa.p12
-KEYSORE_P12_EC = $(CERTGEN_BUILD_DIR)/keystore-ec.p12
-KEYSORE_P12_DSA = $(CERTGEN_BUILD_DIR)/keystore-dsa.p12
+KEYSTORE_P12_RSA = $(CERTGEN_BUILD_DIR)/keystore-rsa.p12
+KEYSTORE_P12_EC = $(CERTGEN_BUILD_DIR)/keystore-ec.p12
+KEYSTORE_P12_DSA = $(CERTGEN_BUILD_DIR)/keystore-dsa.p12
 KEYSTORE_P12 = $(CERTGEN_BUILD_DIR)/keystore.p12
 KEYSTORE_JKS = $(CERTGEN_BUILD_DIR)/keystore.jks
 KEYSTORE_PASSWORD = changeit
@@ -191,41 +191,41 @@ $(CA_CHAIN_CRT): $(ROOT_CRT) $(INTERMEDIATE_CRT)
 OPENSSL_NOFIPS := $(shell if [ 1 = "$(TEST_PKCS11_FIPS)" ] || [ 1 = "$(FIPS_MODE_ENABLED)" ] ; then printf 'OPENSSL_CONF=%s %s' "$(CERTGEN_CONFS_DIR)/empty.cfg" "$(OPENSSL)" ; else printf '%s' "$(OPENSSL)" ; fi )
 
 # create keystore in PKCS12 format, which can then be imported to jks
-$(KEYSORE_P12_RSA): $(SERVER_CRT_RSA) $(SERVER_KEY_RSA) $(CA_CHAIN_CRT)
+$(KEYSTORE_P12_RSA): $(SERVER_CRT_RSA) $(SERVER_KEY_RSA) $(CA_CHAIN_CRT)
 	$(OPENSSL_NOFIPS) pkcs12 -export -chain -in $(SERVER_CRT_RSA) -inkey $(SERVER_KEY_RSA) \
-	-name server-rsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_RSA)  \
+	-name server-rsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSTORE_P12_RSA)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
 # create EC keystore in PKCS12 format, which can then be imported to jks
-$(KEYSORE_P12_EC): $(SERVER_CRT_EC) $(SERVER_KEY_EC) $(CA_CHAIN_CRT)
+$(KEYSTORE_P12_EC): $(SERVER_CRT_EC) $(SERVER_KEY_EC) $(CA_CHAIN_CRT)
 	$(OPENSSL_NOFIPS) pkcs12 -export -chain -in $(SERVER_CRT_EC) -inkey $(SERVER_KEY_EC) \
-	-name server-ec -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_EC)  \
+	-name server-ec -CAfile $(CA_CHAIN_CRT) -out $(KEYSTORE_P12_EC)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
 # create DSA keystore in PKCS12 format, which can then be imported to jks
-$(KEYSORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
+$(KEYSTORE_P12_DSA): $(SERVER_CRT_DSA) $(SERVER_KEY_DSA) $(CA_CHAIN_CRT)
 	$(OPENSSL_NOFIPS) pkcs12 -export -chain -in $(SERVER_CRT_DSA) -inkey $(SERVER_KEY_DSA) \
-	-name server-dsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSORE_P12_DSA)  \
+	-name server-dsa -CAfile $(CA_CHAIN_CRT) -out $(KEYSTORE_P12_DSA)  \
 	-passout pass:$(KEYSTORE_PASSWORD)
 
 # create p12 keystore
-KEYSTORE_P12_DSA_DEP := $(shell if ! [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then printf '%s' "$(KEYSORE_P12_DSA)" ; fi )
-$(KEYSTORE_P12): $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) $(KEYSTORE_P12_DSA_DEP)
+KEYSTORE_P12_DSA_DEP := $(shell if ! [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then printf '%s' "$(KEYSTORE_P12_DSA)" ; fi )
+$(KEYSTORE_P12): $(KEYSTORE_P12_RSA) $(KEYSTORE_P12_EC) $(KEYSTORE_P12_DSA_DEP)
 	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
-	-srckeystore $(KEYSORE_P12_RSA) -srcstoretype PKCS12 \
+	-srckeystore $(KEYSTORE_P12_RSA) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
 	$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
-	-srckeystore $(KEYSORE_P12_EC) -srcstoretype PKCS12 \
+	-srckeystore $(KEYSTORE_P12_EC) -srcstoretype PKCS12 \
 	-srcstorepass $(KEYSTORE_PASSWORD) \
 	-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 	-deststorepass $(KEYSTORE_PASSWORD) \
 	-noprompt -v
 	if ! [ 1 = "$(TEST_PKCS11_FIPS)" ] ; then \
 		$(KEYTOOL) $(KEYTOOL_PARAMS) -importkeystore \
-		-srckeystore $(KEYSORE_P12_DSA) -srcstoretype PKCS12 \
+		-srckeystore $(KEYSTORE_P12_DSA) -srcstoretype PKCS12 \
 		-srcstorepass $(KEYSTORE_PASSWORD) \
 		-destkeystore $(KEYSTORE_P12) -deststoretype PKCS12 \
 		-deststorepass $(KEYSTORE_PASSWORD) \
@@ -252,15 +252,15 @@ $(TRUSTSTORE_JKS): $(ROOT_CRT)
 	-keystore $(TRUSTSTORE_JKS) -storepass $(TRUSTSTORE_PASSWORD) -noprompt
 
 # create nss db with keys and certs
-$(NSSDB_DIR): $(ROOT_CRT) $(KEYSORE_P12_RSA) $(KEYSORE_P12_EC) # $(KEYSORE_P12_DSA)
+$(NSSDB_DIR): $(ROOT_CRT) $(KEYSTORE_P12_RSA) $(KEYSTORE_P12_EC) # $(KEYSTORE_P12_DSA)
 	mkdir $(NSSDB_DIR)
 	echo "$(NSSDB_PASSWORD)" > $(NSSDB_DIR)/password.txt
 	certutil -N -d $(NSSDB_DIR) -f $(NSSDB_DIR)/password.txt
 	touch $(NSSDB_DIR)/secmod.db
 	certutil -A -n rootca -i $(ROOT_CRT) -t C,, -d $(NSSDB_DIR) -f $(NSSDB_DIR)/password.txt
-	pk12util -i $(KEYSORE_P12_RSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
-	pk12util -i $(KEYSORE_P12_EC) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
-	# pk12util -i $(KEYSORE_P12_DSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
+	pk12util -i $(KEYSTORE_P12_RSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
+	pk12util -i $(KEYSTORE_P12_EC) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
+	# pk12util -i $(KEYSTORE_P12_DSA) -W $(KEYSTORE_PASSWORD) -d $(NSSDB_DIR) -k $(NSSDB_DIR)/password.txt
 	if [ 1 = $(NSSDB_FIPS) ] ; then \
 		printf '\n' | modutil -fips true -dbdir $(NSSDB_DIR) ; \
 	fi
