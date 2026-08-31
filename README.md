@@ -28,6 +28,7 @@ make ssl-tests
 - SSLTESTS_USE_OPENSSL_CLIENT=1 - use openssl client instead of default SSLSocketClient written in java for testing
 - SSLTESTS_USE_GNUTLS_CLIENT=1 - use gnutls client instead of default SSLSocketClient written in java for testing
 - SSLTESTS_USE_NSS_CLIENT=1 - use nss client instead of default SSLSocketClient written in java for testing
+- SSLTESTS_WIRESHARK_CAPTURE=1 - use tshark to capture the network traffic for a test in file `tshark_ssl_tests.pcap`.
 
 #### IGNORED combinations:
 Currently, tested combination may show up as IGNORED for following reasons:

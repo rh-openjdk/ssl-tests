@@ -61,6 +61,7 @@ public class SSLSocketTester {
     boolean useGnutlsClient = false;
     boolean useNssClient = false;
     boolean serverShutdownOutput = false;
+    boolean wiresharkCapture = false;
 
     public SSLSocketTester() {
 
@@ -117,6 +118,7 @@ public class SSLSocketTester {
         useGnutlsClient = getBooleanProperty("ssltests.useGnutlsClient", false);
         useNssClient = getBooleanProperty("ssltests.useNssClient", false);
         serverShutdownOutput = SSLSocketTester.getBooleanProperty("ssltests.serverShutdownOutput", false);
+        wiresharkCapture = getBooleanProperty("ssltests.wiresharkCapture", false);
     }
 
     KeyManager[] getKeyManagers(String file, String password) throws Exception {
@@ -371,6 +373,9 @@ public class SSLSocketTester {
                         enabledCiphers);
         if (serverShutdownOutput) {
             sslSocketServer.shutdownOutput = true;
+        }
+        if (wiresharkCapture) {
+            sslSocketServer.produceWiresharkCapture = true;
         }
 
         SSLSocketClient sslSocketClient;

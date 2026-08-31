@@ -26,18 +26,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLServerSocketFactory;
+
 import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 
 public class SSLSocketServer {
 
+    private static final int WIRESHARK_TIMEOUT = Integer.parseInt(System.getProperty("ssltests.wiresharkCapDelay", "500"));
     final Object lock = new Object();
 
+    private Process process;
     SSLServerSocketFactory serverSocketFactory;
     String[] protocols;
     String[] ciphers;
@@ -47,6 +52,7 @@ public class SSLSocketServer {
     String host = "localhost";
     int port = 0;
     boolean shutdownOutput = false;
+    boolean produceWiresharkCapture = false;
 
     public SSLSocketServer(
             SSLServerSocketFactory serverSocketFactory,
@@ -68,6 +74,9 @@ public class SSLSocketServer {
                         = new InetSocketAddress(host, port);
                 serverSocket.bind(serverAddress);
                 port = serverSocket.getLocalPort();
+                if (produceWiresharkCapture) {
+                    process = startCapture();
+                }
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
@@ -88,6 +97,22 @@ public class SSLSocketServer {
                 serverThread = new Thread(runnable);
                 serverThread.start();
             }
+        }
+    }
+
+    // Start wireshark capture for the chosen port on the localhost interface
+    private Process startCapture() {
+        List<String> command = Collections.unmodifiableList(Arrays.asList("tshark", "-i", "lo", "-f", "port " + port, "-w", "tshark_ssl_tests.pcap"));;
+        ProcessBuilder builder = new ProcessBuilder(command);
+        builder.inheritIO();
+        try {
+            Process p = builder.start();
+            // wait for capture process to start. This is needed since captures
+            // might otherwise not show up correctly.
+            Thread.sleep(WIRESHARK_TIMEOUT);
+            return p;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -119,8 +144,21 @@ public class SSLSocketServer {
                     port = 0;
                     serverThread = null;
                     serverSocket = null;
+                    if (produceWiresharkCapture) {
+                        stopCapture();
+                    }
                 }
             }
+        }
+    }
+
+    // Stop the wireshark capture
+    private void stopCapture() {
+        try {
+            process.destroy();
+            process.waitFor();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
